@@ -1,6 +1,9 @@
 import React from 'react'
 import { useForm } from "react-hook-form";
 import { FaUser, FaEnvelope, FaLock, FaPhoneAlt, FaKey} from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+
 
 
 export const Register = ({registerUser}) => {
@@ -9,11 +12,13 @@ export const Register = ({registerUser}) => {
   const onSubmit = (data) => {
     console.log(data);
     const formattedData = {
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
       username: data.username.trim(),
-      email: data.email.trim().toLowerCase(), // Ensure proper email format
+      email: data.email.trim(),
       password: data.password,
-      inviteCode: data.inviteCode || "", // ✅ Make sure inviteCode is sent properly
-      role_id: "", // Backend will assign role based on inviteCode
+      inviteCode: data.inviteCode || "",
+      role_id: "",
       status: "active"
     };
   
@@ -22,6 +27,7 @@ export const Register = ({registerUser}) => {
   };
 
   // Validation rules
+  const nameValidation = { required: "This field is required" };
   const usernameValidation = { required: "Username is required" };
   const emailValidation = {
     required: "Email is required",
@@ -71,7 +77,7 @@ export const Register = ({registerUser}) => {
     <div className="min-h-screen bg-white dark:bg-gray-950">
   <form
     onSubmit={handleSubmit(onSubmit)}
-    className=" max-w-md mx-auto my-10bg-white dark:bg-slate-700 p-6 rounded-xl border border-violet-500 space-y-6 "
+    className=" max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl border border-violet-500 space-y-6 "
   >
     <h2 className="text-3xl font-semibold text-center text-violet-500">
       Sign Up
@@ -80,6 +86,22 @@ export const Register = ({registerUser}) => {
     <p className="text-sm text-center text-violet-500 font-medium">
       Manage your expenses with us
     </p>
+
+    {/* First Name */}
+   <div className="relative">
+          <FaUser className="absolute top-3 left-3 text-violet-500" />
+          <input id="firstName" type="text" {...register("firstName", nameValidation)} placeholder="First Name"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
+          <span className="text-red-500 text-xs">{errors.firstName?.message}</span>
+        </div>
+
+    {/* Last Name */}
+    <div className="relative">
+          <FaUser className="absolute top-3 left-3 text-violet-500" />
+          <input id="lastName" type="text" {...register("lastName", nameValidation)} placeholder="Last Name"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
+          <span className="text-red-500 text-xs">{errors.lastName?.message}</span>
+        </div>
 
     {/* Input Field - Username */}
     <div className="relative">
@@ -171,7 +193,7 @@ export const Register = ({registerUser}) => {
           <input
             id="inviteCode"
             type="text"
-            {...register("inviteCode")} // ✅ Invite code is now optional
+            {...register("inviteCode")} // Invite code is now optional
             placeholder="Admin Invite Code (optional)"
             className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
           />

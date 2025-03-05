@@ -69,7 +69,7 @@ import { AdminDashboard } from "./components/Users/AdminDashboard";
 import { AdminPrivateNavbar } from "./components/Navbar/AdminPrivateNavbar";
 
 
-// ✅ Set backend API base URL globally
+//Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
 
 function App() {
@@ -81,8 +81,8 @@ function App() {
         headers: { "Content-Type": "application/json" },
       });
   
-      console.log("Response Data:", response.data); // ✅ Debugging
-  
+      console.log("Response Data:", response.data); // Debugging
+
       if (response.data.user) {
         const userRole = response.data.user.role ? response.data.user.role.name : "user"; // Default to 'user'
         
@@ -99,14 +99,14 @@ function App() {
   };
   
   const registerUser = async (data) => {
-    console.log("Registering user:", data); // ✅ Debugging
+    console.log("Registering user:", data); //Debugging
   
     try {
       const response = await axios.post("http://127.0.0.1:8000/users/", data, {
         headers: { "Content-Type": "application/json" },
       });
   
-      console.log("Registration response:", response.data); // ✅ Debugging
+      console.log("Registration response:", response.data); //Debugging
   
       if (response.data.message) {
         alert("Registration successful!");
@@ -138,7 +138,7 @@ function App() {
   );
 }
 
-// ✅ Dynamically selects navbar
+//Dynamically selects navbar
 const NavbarHandler = ({ role }) => {
   const location = useLocation();
   const publicPaths = ["/", "/login", "/register"];
@@ -146,7 +146,7 @@ const NavbarHandler = ({ role }) => {
   return <>{isPublicPath || !role ? <PublicNavbar /> : role === "admin" ? <AdminPrivateNavbar/> : <PrivateNavbar />}</>;
 };
 
-// ✅ Protect admin routes
+// Protect admin routes
 const ProtectedRoute = ({ element, requiredRole }) => {
   const role = localStorage.getItem("role");
   return !role || (requiredRole && role !== requiredRole) ? <Navigate to="/login" /> : element;

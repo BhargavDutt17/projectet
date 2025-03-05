@@ -13,7 +13,7 @@ export const Login = ({ loginUser }) => {
 
   const onSubmit = (data) => {
     const formattedData = {
-      email: data.email.trim().toLowerCase(), // Ensure correct format
+      email: data.email.trim(), // Ensure correct format
     password: data.password,
     };
     loginUser(formattedData);
@@ -45,7 +45,7 @@ export const Login = ({ loginUser }) => {
     <div className="min-h-screen bg-white dark:bg-gray-950 pt-1 transition-colors duration-300">
     <form
     onSubmit={handleSubmit(onSubmit)}
-    className="max-w-md mx-auto my-10 bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500"
+    className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500"
   >
       <h2 className="text-3xl font-semibold text-center text-violet-500">Login</h2>
       <p className="text-sm text-center text-violet-500 font-medium">Login to your account</p>
