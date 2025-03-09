@@ -79,10 +79,12 @@ function App() {
     try {
       const response = await axios.post("/users/login/", data, {
         headers: { "Content-Type": "application/json" },
+
+        
       });
   
       console.log("Response Data:", response.data); // Debugging
-
+     
       if (response.data.user) {
         const userRole = response.data.user.role ? response.data.user.role.name : "user"; // Default to 'user'
         

@@ -11,7 +11,8 @@ export const Login = ({ loginUser }) => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
+    
     const formattedData = {
       email: data.email.trim(), // Ensure correct format
     password: data.password,
