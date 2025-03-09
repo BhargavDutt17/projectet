@@ -6,13 +6,11 @@ import { GiDoubleRingedOrb } from "react-icons/gi";
 
 export const PrivateNavbar = () => {
   const navigate = useNavigate();
-
+ 
   const logoutHandler = () => {
-    // //remove the user from storage
-    // localStorage.removeItem("userInfo");
-    // // Optionally, redirect to login page or perform other actions
-    navigate("/login"); // Change this to "/" if you want to go to the homepage
-
+    localStorage.removeItem("id"); // Clear user ID
+    localStorage.removeItem("role"); // Clear user role
+    navigate("/login"); // Redirect to login page
   };
 
   return (
@@ -33,35 +31,35 @@ export const PrivateNavbar = () => {
         </div>
         <div className="hidden md:flex md:space-x-8 justify-center -ml-10">
           <Link
-            to="/addtransaction"
+            to="/user/addtransaction"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium  text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Add Transaction
           </Link>
           <Link
-            to="/addcategory"
+            to="/user/addcategory"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Add Category
           </Link>
           <Link
-            to="/categories"
+            to="/user/categories"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Categories
           </Link>
           <Link
-            to="/profile"
+            to="/user/profile"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Profile
           </Link>
           <Link
-            to="/dashboard"
+            to="/user/dashboard"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >

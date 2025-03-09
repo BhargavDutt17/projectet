@@ -1,129 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import axios from "axios";
 import { FaWallet } from "react-icons/fa";
 import { SiDatabricks } from "react-icons/si";
+import { MdDescription } from "react-icons/md"; // Import icon for description
 
 export const AddCategory = () => {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
-    const [isOther, setIsOther] = useState(false);
+    const [categories, setCategories] = useState([]);
 
-    const onSubmit = (data) => {
-        console.log("Category added:", data);
-        alert("Category added successfully");
-    };
-
-    // Validation rules
-    const typeValidation = {
-        required: "Category type is required",
-    };
-
-    const nameValidation = {
-        required: "Category name is required",
-    };
-
-    const handleCategoryChange = (event) => {
-        const value = event.target.value;
-        setIsOther(value === "other");
-        if (value !== "other") {
-            setValue("customName", ""); // Clear custom name if not "Other"
+    // Fetch Categories (Income/Expense)
+    const fetchCategories = async () => {
+        try {
+            const response = await axios.get("/getAllCategories");
+            setCategories(response.data);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
         }
     };
 
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    // Handle Category Selection Change
+    const handleCategoryChange = (event) => {
+        setValue("category_id", event.target.value); // Ensure correct category selection
+    };
+
+    // Handle Form Submission (Now Saves to `sub_categories`)
+    const onSubmit = async (data) => {
+        try {
+            const subCategoryData = {
+                name: data.name, // Use input field value as subcategory name
+                category_id: data.category_id, // Associate with selected category
+                description: `(Userdefined) ${data.description || ""}`  // Use user input or default
+            };
+
+            const response = await axios.post("/addSubCategory", subCategoryData);
+            alert(response.data.message);
+            fetchCategories();
+        } catch (error) {
+            console.error("Error adding subcategory:", error);
+            alert("Failed to add subcategory");
+        }
+    };
+
+    // Validation Rules
+    const typeValidation = { required: "Category type is required" };
+    const nameValidation = {
+        required: "Category name is required",
+        minLength: {
+            value: 3,
+            message: "Category name must be at least 3 characters long",
+        },
+    };
+    const descriptionValidation = {
+        minLength: {
+            value: 5,
+            message: "Description must be at least 5 characters long",
+        },
+    };
+
     return (
-        <div className='min-h-screen bg-white dark:bg-gray-950 pt-6 transition-colors duration-300'>
+        <div className="min-h-screen bg-white dark:bg-gray-950 pt-6 transition-colors duration-300">
             <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="max-w-lg mx-auto my-10 bg-white dark:bg-slate-700 p-6 rounded-lg shadow-lg space-y-6 border border-violet-500"
+                className="max-w-lg mx-auto bg-white dark:bg-slate-700 p-6 rounded-lg shadow-lg space-y-6 border border-violet-500"
             >
                 <div className="text-center">
                     <h2 className="text-2xl font-semibold text-violet-500">
-                        Add New Category
+                        Add Custom Category
                     </h2>
                     <p className="text-violet-500 font-medium">Fill in the details below.</p>
                 </div>
 
-                {/* Category Type */}
+                {/* 🔹 Category Type (Income/Expense) */}
                 <div className="space-y-2">
-                    <label
-                        htmlFor="type"
-                        className="flex gap-2 items-center text-violet-500 font-medium"
-                    >
+                    <label className="flex gap-2 items-center text-violet-500 font-medium">
                         <FaWallet className="text-violet-500" />
                         <span>Type</span>
                     </label>
                     <select
-                        {...register("type", typeValidation)}
-                        id="type"
-                        className="w-full p-2 mt-1 border border-violet-300 rounded-md shadow-sm  
-                        focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50"
+                        {...register("category_id", typeValidation)}
+                        onChange={handleCategoryChange}
+                        className="w-full p-2 border border-violet-300 rounded-md focus:border-violet-500 focus:ring-violet-500"
                     >
                         <option value="">Select transaction type</option>
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
+                        {categories.map((cat) => (
+                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        ))}
                     </select>
-                    <span className="text-red-500 text-xs">
-                        {errors.type?.message}
-                    </span>
+                    <span className="text-red-500 text-xs">{errors.category_id?.message}</span>
                 </div>
 
-                {/* Category Name */}
-                <div className="space-y-2">
-                    <label
-                        htmlFor="name"
-                        className="flex gap-2 items-center text-violet-500 font-medium"
-                    >
+                {/* 🔹 Category Name */}
+                <div className="flex flex-col">
+                    <label htmlFor="name" className="text-violet-500 font-medium">
                         <SiDatabricks className="inline mr-2 text-violet-500" />
-                        <span>Name</span>
+                        Name
                     </label>
-                    <select
+                    <input
+                        type="text"
                         {...register("name", nameValidation)}
+                        placeholder="Enter subcategory name"
                         id="name"
-                        onChange={handleCategoryChange}
-                        className="w-full p-2 mt-1 border border-violet-300 rounded-md shadow-sm  
-                        focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50"
-                    >
-                        <option value="">Select Category name</option>
-                        <option value="food">Food</option>
-                        <option value="transport">Transport</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <span className="text-red-500 text-xs">
-                        {errors.name?.message}
-                    </span>
+                        className="w-full mt-1 border border-violet-300 rounded-md shadow-sm 
+                        focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 py-2 px-3"
+                    />
+                    <span className="text-red-500 text-xs">{errors.name?.message}</span>
                 </div>
 
-                {/* Custom Category Name Input */}
-                {isOther && (
-                    <div className="space-y-2">
-                        <label
-                            htmlFor="customName"
-                            className="flex gap-2 items-center text-violet-500 font-medium"
-                        >
-                            <SiDatabricks className="inline mr-2 text-violet-500" />
-                            <span>Custom Category Name</span>
-                        </label>
-                        <input
-                            {...register("customName", { required: "Custom category name is required" })}
-                            id="customName"
-                            type="text"
-                            className="w-full p-2 mt-1 border border-violet-300 rounded-md shadow-sm  
-                            focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50"
-                        />
-                        <span className="text-red-500 text-xs">
-                            {errors.customName?.message}
-                        </span>
-                    </div>
-                )}
+                {/* 🔹 Description Field */}
+                <div className="flex flex-col">
+                    <label htmlFor="description" className="text-violet-500 font-medium">
+                        <MdDescription className="inline mr-2 text-violet-500" />
+                        Description
+                    </label>
+                    <textarea
+                        {...register("description", descriptionValidation)}
+                        placeholder="Explain why and what this category is for"
+                        id="description"
+                        className="w-full mt-1 border border-violet-300 rounded-md shadow-sm 
+                        focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 py-2 px-3"
+                    />
+                    <span className="text-red-500 text-xs">{errors.description?.message}</span>
+                </div>
 
                 {/* Submit Button */}
                 <button
                     type="submit"
                     className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-800 hover:to-purple-800 
-                    text-violet-300 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 transform"
+                    text-violet-300 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200"
                 >
-                    Add Category
+                    Add Subcategory
                 </button>
             </form>
         </div>
     );
-}
+};

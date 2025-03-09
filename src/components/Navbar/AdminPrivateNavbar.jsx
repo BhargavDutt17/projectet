@@ -8,11 +8,9 @@ export const AdminPrivateNavbar = () => {
   const navigate = useNavigate();
 
   const logoutHandler = () => {
-    // //remove the user from storage
-    // localStorage.removeItem("userInfo");
-    // // Optionally, redirect to login page or perform other actions
-    navigate("/login"); // Change this to "/" if you want to go to the homepage
-
+    localStorage.removeItem("id"); // Clear admin ID
+    localStorage.removeItem("role"); // Clear admin role
+    navigate("/login"); // Redirect to login page
   };
 
   return (
@@ -33,35 +31,35 @@ export const AdminPrivateNavbar = () => {
         </div>
         <div className="hidden md:flex md:space-x-8 justify-center -ml-10">
           <Link
-            to="/admin"
+            to="/admin/admin"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Admin1
           </Link>
           <Link
-            to="/admin"
+            to="/admin/admintransactions"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Admin2
           </Link>
           <Link
-            to="/admin"
+            to="/admin/admin"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Admin3
           </Link>
           <Link
-            to="/admin"
+            to="/admin/admin"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
             Admin4
           </Link>
           <Link
-            to="/admin"
+            to="/admin/admin"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >
