@@ -31,7 +31,7 @@ export const AdminPrivateNavbar = () => {
         </div>
         <div className="hidden md:flex md:space-x-8 justify-center -ml-10">
           <Link
-            to="/admin/admin"
+            to="/admin/adminaddcategory"
             className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-950 dark:text-violet-500 
             hover:border-violet-400 hover:text-violet-800"
           >

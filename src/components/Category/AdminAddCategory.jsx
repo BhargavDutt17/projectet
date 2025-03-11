@@ -3,19 +3,18 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import { FaWallet } from "react-icons/fa";
 import { SiDatabricks } from "react-icons/si";
-import { MdDescription } from "react-icons/md";
+import { MdDescription } from "react-icons/md"; 
 
-export const AddCategory = () => {
+export const AdminAddCategory = () => {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
     const [categories, setCategories] = useState([]);
 
-    // Fetch user_id & role from localStorage
-    const user_id = localStorage.getItem("id") || "";
-    const role = localStorage.getItem("role") || "";
+    // Fetch admin_id and admin_role from localStorage
+    const admin_id = localStorage.getItem("id") || "";  
+    const admin_role = localStorage.getItem("role") || "";
 
-    // Debugging: Check if user details are retrieved
-    console.log("User ID:", user_id);
-    console.log("User Role:", role);
+    console.log("Admin ID:", admin_id);  // Debugging
+    console.log("Admin Role:", admin_role);
 
     // Fetch Categories (Income/Expense)
     const fetchCategories = async () => {
@@ -36,14 +35,14 @@ export const AddCategory = () => {
         setValue("category_id", event.target.value);
     };
 
-    // Handle Form Submission (User-Defined Subcategories)
+    // Handle Form Submission (Admin-Defined Subcategories)
     const onSubmit = async (data) => {
         try {
             const subCategoryData = {
-                name: data.name,
+                name: data.name.trim(),
                 category_id: data.category_id,
-                description: `(Userdefined) ${data.description || ""}`,
-                created_by: { user_id, role }  // Matches backend format
+                description: `(Admindefined) ${data.description.trim() || ""}`,
+                created_by: { user_id: admin_id, role: admin_role } //Matches backend format
             };
     
             console.log("Payload being sent:", subCategoryData);
@@ -59,6 +58,7 @@ export const AddCategory = () => {
         }
     };
     
+
     // Validation Rules
     const typeValidation = { required: "Category type is required" };
     const nameValidation = {
@@ -77,7 +77,7 @@ export const AddCategory = () => {
             >
                 <div className="text-center">
                     <h2 className="text-2xl font-semibold text-violet-500">
-                        Add Custom Category
+                        Add Global Categories
                     </h2>
                     <p className="text-violet-500 font-medium">Fill in the details below.</p>
                 </div>

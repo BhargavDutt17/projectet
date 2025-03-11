@@ -13,6 +13,7 @@ import { AdminDashboard } from "./components/Users/AdminDashboard";
 import { AdminPrivateNavbar } from "./components/Navbar/AdminPrivateNavbar";
 import { AdminTransactionList } from "./components/Transactions/AdminTransactionList";
 import PrivateRoutes from "./components/hooks/PrivateRoutes";
+import { AdminAddCategory } from "./components/Category/AdminAddCategory";
 
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
@@ -56,6 +57,7 @@ function App() {
           <Route path="/admin">
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="admintransactions" element={<AdminTransactionList />} />
+            <Route path="adminaddcategory" element={<AdminAddCategory/>}/>
           </Route>
         </Route>
 
