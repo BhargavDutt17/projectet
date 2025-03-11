@@ -9,13 +9,12 @@ export const AddCategory = () => {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
     const [categories, setCategories] = useState([]);
 
-    // Fetch user_id & role from localStorage
+    // Fetch user_id & role_id from localStorage
     const user_id = localStorage.getItem("id") || "";
-    const role = localStorage.getItem("role") || "";
+    const role_id = localStorage.getItem("role") || "";
 
-    // Debugging: Check if user details are retrieved
     console.log("User ID:", user_id);
-    console.log("User Role:", role);
+    console.log("User Role ID:", role_id);
 
     // Fetch Categories (Income/Expense)
     const fetchCategories = async () => {
@@ -43,14 +42,14 @@ export const AddCategory = () => {
                 name: data.name,
                 category_id: data.category_id,
                 description: `(Userdefined) ${data.description || ""}`,
-                created_by: { user_id, role }  // Matches backend format
+                user_id,
+                role_id, // Matches backend format
             };
-    
+
             console.log("Payload being sent:", subCategoryData);
-    
-            // Corrected API Call
+
             const response = await axios.post("/addSubCategory", subCategoryData);
-    
+
             alert(response.data.message);
             fetchCategories();
         } catch (error) {

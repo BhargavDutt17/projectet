@@ -42,14 +42,15 @@ export const AdminAddCategory = () => {
                 name: data.name.trim(),
                 category_id: data.category_id,
                 description: `(Admindefined) ${data.description.trim() || ""}`,
-                created_by: { user_id: admin_id, role: admin_role } //Matches backend format
+                user_id: admin_id,  // Matches new backend format
+                role_id: admin_role  // Matches new backend format
             };
-    
+
             console.log("Payload being sent:", subCategoryData);
-    
+
             // Corrected API Call
             const response = await axios.post("/addSubCategory", subCategoryData);
-    
+
             alert(response.data.message);
             fetchCategories();
         } catch (error) {
