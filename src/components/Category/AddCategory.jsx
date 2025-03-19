@@ -9,12 +9,13 @@ export const AddCategory = () => {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
     const [categories, setCategories] = useState([]);
 
-    // Fetch user_id & role_id from localStorage
+    // Fetch user details from localStorage
     const user_id = localStorage.getItem("id") || "";
-    const role_id = localStorage.getItem("role") || "";
+    const role_id = localStorage.getItem("role_id") || "";
+    const role_name = localStorage.getItem("role") || "user"; 
 
     console.log("User ID:", user_id);
-    console.log("User Role ID:", role_id);
+    console.log("Role Name:", role_name); //Debugging
 
     // Fetch Categories (Income/Expense)
     const fetchCategories = async () => {
@@ -43,7 +44,8 @@ export const AddCategory = () => {
                 category_id: data.category_id,
                 description: `(Userdefined) ${data.description || ""}`,
                 user_id,
-                role_id, // Matches backend format
+                role_id,  
+                role_name 
             };
 
             console.log("Payload being sent:", subCategoryData);
@@ -57,7 +59,7 @@ export const AddCategory = () => {
             alert("Failed to add subcategory");
         }
     };
-    
+
     // Validation Rules
     const typeValidation = { required: "Category type is required" };
     const nameValidation = {

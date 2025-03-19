@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm } from "react-hook-form";
-import { FaUser , FaLock } from "react-icons/fa";
+import { FaUser, FaLock } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import axios from "axios"; // Import axios for API calls
 
@@ -17,22 +17,24 @@ export const Login = ({ setRole }) => {
       email: data.email.trim(),
       password: data.password,
     };
-  
+
     try {
       const res = await axios.post("/users/login/", formattedData, {
         headers: { "Content-Type": "application/json" },
       });
-  
       if (res.status === 200) {
+        // ✅ Store user_id, role_id, and role_name in LocalStorage
         localStorage.setItem("id", res.data.user._id);
-        const userRole = res.data.user.role.name;
-        localStorage.setItem("role", userRole);
-        setRole(userRole); // Update role state in App.jsx
-  
-        if (userRole === "user") {
-          navigate("/user/dashboard"); // Redirect to user dashboard
-        } else if (userRole === "admin") {
-          navigate("/admin/dashboard"); // Redirect to admin dashboard
+        localStorage.setItem("role", res.data.user.role.name); // Role Name
+        localStorage.setItem("role_id", res.data.user.role._id); // ✅ Store Role ID
+
+        setRole(res.data.user.role.name); // Update role state in App.jsx
+
+        // Redirect based on role
+        if (res.data.user.role.name === "user") {
+          navigate("/user/dashboard");
+        } else if (res.data.user.role.name === "admin") {
+          navigate("/admin/dashboard");
         }
       }
     } catch (error) {
@@ -69,7 +71,7 @@ export const Login = ({ setRole }) => {
 
         {/* Input Field - Email */}
         <div className="relative">
-          <FaUser  className="absolute top-3 left-3 text-violet-500" />
+          <FaUser className="absolute top-3 left-3 text-violet-500" />
           <input
             id="email"
             type="text"

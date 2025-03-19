@@ -3,18 +3,19 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import { FaWallet } from "react-icons/fa";
 import { SiDatabricks } from "react-icons/si";
-import { MdDescription } from "react-icons/md"; 
+import { MdDescription } from "react-icons/md";
 
 export const AdminAddCategory = () => {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
     const [categories, setCategories] = useState([]);
 
-    // Fetch admin_id and admin_role from localStorage
-    const admin_id = localStorage.getItem("id") || "";  
-    const admin_role = localStorage.getItem("role") || "";
+    // Fetch admin details from localStorage
+    const admin_id = localStorage.getItem("id") || "";
+    const role_id = localStorage.getItem("role_id") || "";
+    const role_name = localStorage.getItem("role") || "user"; //Fetch role name
 
-    console.log("Admin ID:", admin_id);  // Debugging
-    console.log("Admin Role:", admin_role);
+    console.log("Admin ID:", admin_id);
+    console.log("Role Name:", role_name); //Debugging
 
     // Fetch Categories (Income/Expense)
     const fetchCategories = async () => {
@@ -42,13 +43,13 @@ export const AdminAddCategory = () => {
                 name: data.name.trim(),
                 category_id: data.category_id,
                 description: `(Admindefined) ${data.description.trim() || ""}`,
-                user_id: admin_id,  // Matches new backend format
-                role_id: admin_role  // Matches new backend format
+                user_id: admin_id,
+                role_id,  
+                role_name 
             };
 
             console.log("Payload being sent:", subCategoryData);
 
-            // Corrected API Call
             const response = await axios.post("/addSubCategory", subCategoryData);
 
             alert(response.data.message);
@@ -58,7 +59,6 @@ export const AdminAddCategory = () => {
             alert("Failed to add subcategory");
         }
     };
-    
 
     // Validation Rules
     const typeValidation = { required: "Category type is required" };
