@@ -1,2 +1,2 @@
 19-03-2025
-addcategory both for user and admin is now connected to backend some features of TrasactionList is remains also Transaction form is connected to backend
+addcategory both for user and admin is now connected to backend some features of TrasactionList is remains but connected to backend also Transaction form is connected to backend
