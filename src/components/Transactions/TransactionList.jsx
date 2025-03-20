@@ -4,6 +4,7 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 
 export const TransactionList = () => {
+
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -70,7 +71,8 @@ export const TransactionList = () => {
     if (filters.type) {
       fetchSubCategories(filters.type);
     } else {
-      setSubCategories([]); // Reset subcategories when type is cleared
+      setSubCategories([]);
+      setFilters((prev) => ({ ...prev, category: "" })); 
     }
   }, [filters.type]);
 
@@ -104,7 +106,7 @@ export const TransactionList = () => {
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
-      <div className="mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 ">
+      <div className="mx-auto grid grid-cols-1 md:grid-cols-6 gap-6 ">
         {/* Start Date Filter */}
         <div className="col-span-1">
           <label className="block text-violet-500 text-center">Start Date</label>
@@ -170,7 +172,29 @@ export const TransactionList = () => {
           </select>
           <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/5 text-violet-500" />
         </div>
+
+        {/* Generate Report Button */}
+        <div className="flex justify-center mt-6 mb-6">
+          <button
+            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+  bg-white dark:bg-violet-700 text-violet-100"
+          >
+            Generate Report
+          </button>
+        </div>
+
+        {/* Doenload Report Button */}
+        <div className="flex justify-center mt-6 mb-6">
+          <button
+            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+  bg-white dark:bg-violet-700 text-violet-100"
+          >
+            Download Report
+          </button>
+        </div>
       </div>
+
+      
 
       {/* Transaction List */}
       <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950 ">
