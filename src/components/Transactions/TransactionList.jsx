@@ -14,16 +14,14 @@ export const TransactionList = () => {
 
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]); // Stores types (categories)
-  const [subCategories, setSubCategories] = useState([]); //Stores subcategories
+  const [subCategories, setSubCategories] = useState([]); // Stores subcategories
+  const [reportUrl, setReportUrl] = useState(null); // Stores latest report URL
 
   // Fetch Transactions from Backend
   const fetchTransactions = async () => {
     try {
-      const user_id = localStorage.getItem("id"); //Get logged-in user's ID
-      if (!user_id) {
-        console.error("User ID not found in localStorage");
-        return;
-      }
+      const user_id = localStorage.getItem("id"); // Get logged-in user's ID
+      if (!user_id) return console.error("User ID not found in localStorage");
 
       const response = await axios.get(`/getTransactionByUserId/${user_id}`);
       setTransactions(response.data);
@@ -36,7 +34,7 @@ export const TransactionList = () => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get("/getAllCategories");
-      setCategories(response.data); // Set categories (Income/Expense)
+      setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -51,7 +49,7 @@ export const TransactionList = () => {
       const role_id = localStorage.getItem("role_id") || "";
 
       const response = await axios.get(`/getSubCategoryByCategoryId/${categoryId}`, {
-        params: { user_id, role_id }, // Pass user_id and role_id in the request
+        params: { user_id, role_id },
       });
 
       setSubCategories(response.data);
@@ -60,10 +58,30 @@ export const TransactionList = () => {
     }
   };
 
+  // Fetch Latest Report
+
+  const fetchLatestReport = async () => {
+    try {
+      const user_id = localStorage.getItem("id");
+      if (!user_id) return;
+
+      const response = await axios.get(`/getLatestTransactionReport/${user_id}`);
+
+      if (response.data.report_file_url) {
+        setReportUrl(response.data.report_file_url);
+      } else {
+        setReportUrl(null);
+      }
+    } catch (error) {
+      console.error("Error fetching latest report:", error);
+      setReportUrl(null);
+    }
+  };
 
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
+    fetchLatestReport();
   }, []);
 
   // Watch Type Selection and Fetch Subcategories
@@ -72,7 +90,7 @@ export const TransactionList = () => {
       fetchSubCategories(filters.type);
     } else {
       setSubCategories([]);
-      setFilters((prev) => ({ ...prev, category: "" })); 
+      setFilters((prev) => ({ ...prev, category: "" }));
     }
   }, [filters.type]);
 
@@ -102,6 +120,32 @@ export const TransactionList = () => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  // Generate Report
+  const generateReport = async () => {
+    try {
+      const user_id = localStorage.getItem("id");
+      if (!user_id) return alert("User ID not found. Please log in.");
+
+      const startDate = filters.startDate ? filters.startDate.split("-").reverse().join("/") : "";
+      const endDate = filters.endDate ? filters.endDate.split("-").reverse().join("/") : "";
+
+      // Fix: Send start_date and end_date as query parameters (not JSON body)
+      const response = await axios.post(
+        `/generateTransactionReport?user_id=${user_id}&start_date=${startDate}&end_date=${endDate}`
+      );
+
+      if (response.data.report_file_url) {
+        alert("Report generated successfully!");
+        setReportUrl(response.data.report_file_url);
+      } else {
+        alert("Failed to generate report.");
+      }
+    } catch (error) {
+      console.error("Error generating report:", error);
+      alert("Error generating report. Please try again.");
+    }
   };
 
   return (
@@ -175,7 +219,7 @@ export const TransactionList = () => {
 
         {/* Generate Report Button */}
         <div className="flex justify-center mt-6 mb-6">
-          <button
+          <button onClick={generateReport}
             className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
   bg-white dark:bg-violet-700 text-violet-100"
           >
@@ -186,15 +230,25 @@ export const TransactionList = () => {
         {/* Doenload Report Button */}
         <div className="flex justify-center mt-6 mb-6">
           <button
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-  bg-white dark:bg-violet-700 text-violet-100"
+            onClick={() => {
+              if (reportUrl) {
+                window.open(reportUrl, "_blank"); // Open report in a new tab
+              } else {
+                alert("No report available. Please generate one first.");
+              }
+            }}
+            className={`w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 
+      focus:ring-opacity-50 bg-white dark:bg-violet-700 text-violet-100 
+      ${!reportUrl ? "opacity-50 cursor-not-allowed" : ""}`} // Disable button if no report
+            disabled={!reportUrl}
           >
             Download Report
           </button>
         </div>
+
       </div>
 
-      
+
 
       {/* Transaction List */}
       <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950 ">

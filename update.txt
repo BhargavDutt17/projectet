@@ -1,2 +1,6 @@
 19-03-2025
-addcategory both for user and admin is now connected to backend some features of TrasactionList is remains but connected to backend also Transaction form is connected to backend
+addcategory both for user and admin is now connected to backend some features of TrasactionList is remains but connected to backend also 
+Transaction form is connected to backend
+
+20-03-2025
+TrasactionList code is updated both gerate report and download latest report is working properly
