@@ -4,3 +4,6 @@ Transaction form is connected to backend
 
 20-03-2025
 TrasactionList code is updated both gerate report and download latest report is working properly
+
+22-03-2025
+little change in admin and user privatenavbar and and categories list are now connected to backend
