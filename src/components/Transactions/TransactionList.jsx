@@ -194,7 +194,7 @@ export const TransactionList = () => {
               </option>
             ))}
           </select>
-          <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/5 text-violet-500" />
+          <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/3 text-violet-500" />
         </div>
 
         {/* Category Filter */}
@@ -214,7 +214,7 @@ export const TransactionList = () => {
               </option>
             ))}
           </select>
-          <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/5 text-violet-500" />
+          <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/4 text-violet-500" />
         </div>
 
         {/* Generate Report Button */}
