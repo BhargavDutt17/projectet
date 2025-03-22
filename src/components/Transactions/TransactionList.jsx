@@ -150,7 +150,7 @@ export const TransactionList = () => {
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
-      <div className="mx-auto grid grid-cols-1 md:grid-cols-6 gap-6 ">
+      <div className="mx-auto grid grid-cols-1 md:grid-cols-6 gap-6 rounded-lg">
         {/* Start Date Filter */}
         <div className="col-span-1">
           <label className="block text-violet-500 text-center">Start Date</label>
