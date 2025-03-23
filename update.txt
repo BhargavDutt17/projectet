@@ -7,3 +7,6 @@ TrasactionList code is updated both gerate report and download latest report is 
 
 22-03-2025
 little change in admin and user privatenavbar and and categories list are now connected to backend
+
+23-03-2025
+added profile pic during registration and some minor changes in admin and user privatenavbar now there you can see profile picture

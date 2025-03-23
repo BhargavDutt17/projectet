@@ -15,7 +15,7 @@ import { AdminTransactionList } from "./components/Transactions/AdminTransaction
 import PrivateRoutes from "./components/hooks/PrivateRoutes";
 import { AdminAddCategory } from "./components/Category/AdminAddCategory";
 import { CategoriesList } from "./components/Category/CategoriesList";
-
+import {UserProfile} from "./components/Users/UserProfile"
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -50,7 +50,8 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="addtransaction" element={<TransactionForm />} />
             <Route path="addcategory" element={<AddCategory />} />
-            <Route path="categorieslist" element={<CategoriesList/>}></Route>
+            <Route path="categorieslist" element={<CategoriesList/>}/>
+            <Route path="profile" element={<UserProfile/>}/>
           </Route>
         </Route>
 
@@ -83,4 +84,3 @@ const NavbarHandler = ({ role }) => {
 };
 
 export default App;
-

@@ -1,28 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
-import { FaUser  , FaEnvelope, FaLock, FaKey } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaKey} from "react-icons/fa";
+import { IoPersonCircleOutline} from "react-icons/io5"; 
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 
 export const Register = () => {
   const { register, handleSubmit, formState: { errors }, getValues } = useForm();
   const navigate = useNavigate();
+  const [profileImage, setProfileImage] = useState(null);
+
+  // Handle Profile Image Change
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    setProfileImage(file);
+  };
 
   const onSubmit = async (data) => {
-    const formattedData = {
-      firstName: data.firstName.trim(),
-      lastName: data.lastName.trim(),
-      username: data.username.trim(),
-      email: data.email.trim(),
-      password: data.password,
-      inviteCode: data.inviteCode || "",
-      role_id: "", // You can set this based on your logic
-      status: "active"
-    };
+    const formData = new FormData();
+    formData.append("firstName", data.firstName.trim());
+    formData.append("lastName", data.lastName.trim());
+    formData.append("username", data.username.trim());
+    formData.append("email", data.email.trim());
+    formData.append("password", data.password);
+    formData.append("inviteCode", data.inviteCode || "");
+    formData.append("role_id", ""); // You can set this based on your logic
+    formData.append("status", "active");
+
+    if (profileImage) {
+      formData.append("profile_image", profileImage);
+    }
 
     try {
-      const response = await axios.post("/users/", formattedData, {
-        headers: { "Content-Type": "application/json" },
+      const response = await axios.post("/users/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       if (response.data.message) {
@@ -76,9 +87,29 @@ export const Register = () => {
         <h2 className="text-3xl font-semibold text-center text-violet-500">Sign Up</h2>
         <p className="text-sm text-center text-violet-500 font-medium">Manage your expenses with us</p>
 
+        {/* Profile Picture Upload */}
+        <div className="relative flex flex-col items-center">
+          <label className="cursor-pointer relative">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+            <div className="w-12 h-12 rounded-full border border-violet-300 flex items-center justify-center">
+              {profileImage ? (
+                <img src={URL.createObjectURL(profileImage)} alt="Profile Preview" className="w-full h-full rounded-full" />
+              ) : (
+                <IoPersonCircleOutline className="text-violet-500 w-10 h-10" />
+              )}
+            </div>
+          </label>
+          <span className="text-sm font-medium text-violet-500 mt-2">Upload Profile Picture</span>
+        </div>
+
         {/* First Name */}
         <div className="relative">
-          <FaUser   className="absolute top-3 left-3 text-violet-500" />
+          <FaUser className="absolute top-3 left-3 text-violet-500" />
           <input id="firstName" type="text" {...register("firstName", nameValidation)} placeholder="First Name"
             className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
           <span className="text-red-500 text-xs">{errors.firstName?.message}</span>
@@ -86,81 +117,53 @@ export const Register = () => {
 
         {/* Last Name */}
         <div className="relative">
-          <FaUser   className="absolute top-3 left-3 text-violet-500" />
+          <FaUser className="absolute top-3 left-3 text-violet-500" />
           <input id="lastName" type="text" {...register("lastName", nameValidation)} placeholder="Last Name"
             className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
           <span className="text-red-500 text-xs">{errors.lastName?.message}</span>
         </div>
 
-        {/* Input Field - Username */}
+        {/* Username */}
         <div className="relative">
-          <FaUser   className="absolute top-3 left-3 text-violet-500" />
-          <input
-            id="username"
-            type="text"
-            {...register("username", usernameValidation)}
-            placeholder="Username"
-            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
-          />
+          <FaUser className="absolute top-3 left-3 text-violet-500" />
+          <input id="username" type="text" {...register("username", usernameValidation)} placeholder="Username"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
           <span className="text-red-500 text-xs">{errors.username?.message}</span>
         </div>
 
-        {/* Input Field - Email */}
+        {/* Email */}
         <div className="relative">
           <FaEnvelope className="absolute top-3 left-3 text-violet-500" />
-          <input
-            id="email"
-            type="email"
-            {...register("email", emailValidation)}
-            placeholder="Email"
-            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
-          />
+          <input id="email" type="email" {...register("email", emailValidation)} placeholder="Email"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
           <span className="text-red-500 text-xs">{errors.email?.message}</span>
         </div>
 
-        {/* Input Field - Password */}
+        {/* Password */}
         <div className="relative">
           <FaLock className="absolute top-3 left-3 text-violet-500" />
-          <input
-            id="password"
-            type="password"
-            {...register("password", passwordValidation)}
-            placeholder="Password"
-            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
-          />
+          <input id="password" type="password" {...register("password", passwordValidation)} placeholder="Password"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
           <span className="text-red-500 text-xs">{errors.password?.message}</span>
         </div>
 
-        {/* Input Field - Confirm Password */}
+        {/* Confirm Password */}
         <div className="relative">
           <FaLock className="absolute top-3 left-3 text-violet-500" />
-          <input
-            id="confirmPassword"
-            type="password"
-            {...register("confirmPassword", confirmPasswordValidation)}
-            placeholder="Confirm Password"
-            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
-          />
+          <input id="confirmPassword" type="password" {...register("confirmPassword", confirmPasswordValidation)} placeholder="Confirm Password"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
           <span className="text-red-500 text-xs">{errors.confirmPassword?.message}</span>
         </div>
 
+        {/* Invite Code */}
         <div className="relative">
           <FaKey className="absolute top-3 left-3 text-violet-500" />
-          <input
-            id="inviteCode"
-            type="text"
-            {...register("inviteCode")} // Invite code is now optional
-            placeholder="Admin Invite Code (optional)"
-            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
-          />
+          <input id="inviteCode" type="text" {...register("inviteCode")} placeholder="Admin Invite Code (optional)"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500" />
         </div>
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-800 hover:to-purple-900 
-          text-violet-200 font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
-        >
+        <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-violet-200 font-bold py-2 px-4 rounded-md transition duration-150">
           Register
         </button>
       </form>
