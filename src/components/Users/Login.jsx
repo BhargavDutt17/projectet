@@ -14,7 +14,7 @@ export const Login = ({ setRole }) => {
 
   const onSubmit = async (data) => {
     const formattedData = {
-      email: data.email.trim(),
+      email_or_username: data.email_or_username.trim(),
       password: data.password,
     };
 
@@ -22,15 +22,14 @@ export const Login = ({ setRole }) => {
       const res = await axios.post("/users/login/", formattedData, {
         headers: { "Content-Type": "application/json" },
       });
+
       if (res.status === 200) {
-        // Store user_id, role_id, and role_name in LocalStorage
         localStorage.setItem("id", res.data.user._id);
-        localStorage.setItem("role", res.data.user.role.name); // Role Name
-        localStorage.setItem("role_id", res.data.user.role._id); // Store Role ID
+        localStorage.setItem("role", res.data.user.role.name);
+        localStorage.setItem("role_id", res.data.user.role._id);
 
-        setRole(res.data.user.role.name); // Update role state in App.jsx
+        setRole(res.data.user.role.name);
 
-        // Redirect based on role
         if (res.data.user.role.name === "user") {
           navigate("/user/dashboard");
         } else if (res.data.user.role.name === "admin") {
@@ -45,12 +44,18 @@ export const Login = ({ setRole }) => {
 
   // Validation rules
   const emailValidation = {
-    required: "Email is required",
-    pattern: {
-      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      message: "Invalid email format",
+    required: "Email or Username is required",
+    validate: (value) => {
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const usernamePattern = /^[a-zA-Z0-9_.-]+$/; // Allow alphanumeric usernames with dots, underscores, and dashes
+
+      if (!emailPattern.test(value) && !usernamePattern.test(value)) {
+        return "Invalid email or username format";
+      }
     },
   };
+
+
 
   const passwordValidation = {
     required: "Password is required",
@@ -70,17 +75,21 @@ export const Login = ({ setRole }) => {
         <p className="text-sm text-center text-violet-500 font-medium">Login to your account</p>
 
         {/* Input Field - Email */}
+
         <div className="relative">
           <FaUser className="absolute top-3 left-3 text-violet-500" />
           <input
-            id="email"
+            id="email_or_username"
             type="text"
-            {...register("email", emailValidation)}
-            placeholder="Email"
+            {...register("email_or_username", emailValidation)}
+            placeholder="Email or Username"
             className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
           />
-          <span className="text-red-500 text-xs">{errors.email?.message}</span>
+          <span className="text-red-500 text-xs">{errors.email_or_username?.message}</span>
+
         </div>
+
+
 
         {/* Input Field - Password */}
         <div className="relative">

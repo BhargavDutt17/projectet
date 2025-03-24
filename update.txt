@@ -10,3 +10,6 @@ little change in admin and user privatenavbar and and categories list are now co
 
 23-03-2025
 added profile pic during registration and some minor changes in admin and user privatenavbar now there you can see profile picture
+
+24-03-2025
+we can login with username too now
