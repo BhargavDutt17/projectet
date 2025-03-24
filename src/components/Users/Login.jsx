@@ -23,10 +23,10 @@ export const Login = ({ setRole }) => {
         headers: { "Content-Type": "application/json" },
       });
       if (res.status === 200) {
-        // ✅ Store user_id, role_id, and role_name in LocalStorage
+        // Store user_id, role_id, and role_name in LocalStorage
         localStorage.setItem("id", res.data.user._id);
         localStorage.setItem("role", res.data.user.role.name); // Role Name
-        localStorage.setItem("role_id", res.data.user.role._id); // ✅ Store Role ID
+        localStorage.setItem("role_id", res.data.user.role._id); // Store Role ID
 
         setRole(res.data.user.role.name); // Update role state in App.jsx
 
