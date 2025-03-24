@@ -221,7 +221,7 @@ export const TransactionList = () => {
         <div className="flex justify-center mt-6 mb-6">
           <button onClick={generateReport}
             className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-  bg-white dark:bg-violet-700 text-violet-100"
+  bg-violet-700 text-violet-100"
           >
             Generate Report
           </button>
@@ -238,7 +238,7 @@ export const TransactionList = () => {
               }
             }}
             className={`w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 
-      focus:ring-opacity-50 bg-white dark:bg-violet-700 text-violet-100 
+      focus:ring-opacity-50 bg-violet-700 text-violet-100 
       ${!reportUrl ? "opacity-50 cursor-not-allowed" : ""}`} // Disable button if no report
             disabled={!reportUrl}
           >
