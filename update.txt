@@ -13,3 +13,6 @@ added profile pic during registration and some minor changes in admin and user p
 
 24-03-2025
 we can login with username too now
+
+27-03-2025
+userprofile is 80% complete only delete and deactivate function remains
