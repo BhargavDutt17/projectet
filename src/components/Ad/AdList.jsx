@@ -35,21 +35,30 @@ export const AdList = () => {
         fetchAds();
     }, [userId]);
 
-    if (loading) return <p>Loading ads...</p>;
-    if (error) return <p>{error}</p>;
+    if (loading) return <p className="text-center text-lg">Loading ads...</p>;
+    if (error) return <p className="text-center text-red-500">{error}</p>;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white dark:bg-gray-950">
             {ads.map((ad, index) => (
-                <a key={index} href={`https://www.google.com/search?q=${ad.title}`} target="_blank" rel="noopener noreferrer">
-                    <div className="p-4 bg-white rounded-lg shadow-md">
+                <a 
+                    key={index} 
+                    href={`https://www.google.com/search?q=${ad.title}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                >
+                    <div className="p-6 bg-white dark:bg-slate-700  rounded-xl shadow-lg max-w-3xl w-full h-60 transition-transform transform hover:scale-105">
                         {ad.image_url ? (
-                            <img src={ad.image_url} alt={ad.title} className="w-full h-40 object-cover rounded-md" />
+                            <img 
+                                src={ad.image_url} 
+                                alt={ad.title} 
+                                className="w-full h-32 object-cover rounded-md"
+                            />
                         ) : (
                             <p className="text-center text-gray-500">No image available</p>
                         )}
-                        <h2 className="text-lg font-bold mt-2">{ad.title}</h2>
-                        <p className="text-gray-600">{ad.message}</p>
+                        <h2 className="text-xl font-semibold mt-3">{ad.title}</h2>
+                        <p className="text-gray-700 text-sm mt-1">{ad.message}</p>
                     </div>
                 </a>
             ))}

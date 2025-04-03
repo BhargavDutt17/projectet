@@ -12,9 +12,7 @@ export const Dashboard = () => {
       <div>
         <AdList/>
       </div>
-      {/* <div>
-        <TransactionList />
-      </div> */}
+     
     </>
   )
 }
