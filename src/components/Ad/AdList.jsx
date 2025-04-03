@@ -5,11 +5,9 @@ export const AdList = () => {
     const [ads, setAds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const userId = localStorage.getItem("id"); // 🔹 Fetch user ID from local storage
+    const userId = localStorage.getItem("id");
 
     useEffect(() => {
-        console.log("Fetched User ID:", userId); // Debugging line
-
         if (!userId) {
             setError("User ID not found in local storage");
             setLoading(false);
@@ -43,10 +41,17 @@ export const AdList = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {ads.map((ad, index) => (
-                <div key={index} className="p-4 bg-white rounded-lg shadow-md">
-                    <h2 className="text-lg font-bold">{ad.title}</h2>
-                    <p className="text-gray-600">{ad.message}</p>
-                </div>
+                <a key={index} href={`https://www.google.com/search?q=${ad.title}`} target="_blank" rel="noopener noreferrer">
+                    <div className="p-4 bg-white rounded-lg shadow-md">
+                        {ad.image_url ? (
+                            <img src={ad.image_url} alt={ad.title} className="w-full h-40 object-cover rounded-md" />
+                        ) : (
+                            <p className="text-center text-gray-500">No image available</p>
+                        )}
+                        <h2 className="text-lg font-bold mt-2">{ad.title}</h2>
+                        <p className="text-gray-600">{ad.message}</p>
+                    </div>
+                </a>
             ))}
         </div>
     );
