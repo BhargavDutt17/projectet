@@ -39,7 +39,8 @@ export const PrivateNavbar = () => {
     { path: "/user/addcategory", label: "Add Category" },
     { path: "/user/categorieslist", label: "Categories" },
     { path: "/user/profile", label: "Profile" },
-    {path: "/user/transactionreports", label:"Transaction Report"}
+    {path: "/user/transactionreports", label:"Transaction Report"},
+    {path: "/user/trasactionlists", label:"Trasaction List"}
   ];
 
   return (
