@@ -6,12 +6,12 @@ import AdList from '../Ad/AdList'
 export const Dashboard = () => {
   return (
     <>
+    
       <div className='bg-white dark:bg-gray-950'>
+         <AdList/>
         <TransactionChart />
       </div>
-      <div>
-        <AdList/>
-      </div>
+      
      
     </>
   )
