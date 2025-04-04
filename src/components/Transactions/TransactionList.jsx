@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const TransactionList = () => {
 
@@ -13,14 +14,13 @@ export const TransactionList = () => {
   });
 
   const [transactions, setTransactions] = useState([]);
-  const [categories, setCategories] = useState([]); // Stores types (categories)
-  const [subCategories, setSubCategories] = useState([]); // Stores subcategories
-  const [reportUrl, setReportUrl] = useState(null); // Stores latest report URL
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [reportUrl, setReportUrl] = useState(null);
 
-  // Fetch Transactions from Backend
   const fetchTransactions = async () => {
     try {
-      const user_id = localStorage.getItem("id"); // Get logged-in user's ID
+      const user_id = localStorage.getItem("id");
       if (!user_id) return console.error("User ID not found in localStorage");
 
       const response = await axios.get(`/getTransactionByUserId/${user_id}`);
@@ -30,7 +30,6 @@ export const TransactionList = () => {
     }
   };
 
-  // Fetch Categories from Backend (Income/Expense)
   const fetchCategories = async () => {
     try {
       const response = await axios.get("/getAllCategories");
@@ -40,7 +39,6 @@ export const TransactionList = () => {
     }
   };
 
-  // Fetch Subcategories When Type (Category) is Selected
   const fetchSubCategories = async (categoryId) => {
     if (!categoryId) return;
 
@@ -58,7 +56,6 @@ export const TransactionList = () => {
     }
   };
 
-  // Fetch Latest Report
 
   const fetchLatestReport = async () => {
     try {
@@ -84,7 +81,6 @@ export const TransactionList = () => {
     fetchLatestReport();
   }, []);
 
-  // Watch Type Selection and Fetch Subcategories
   useEffect(() => {
     if (filters.type) {
       fetchSubCategories(filters.type);
@@ -94,13 +90,11 @@ export const TransactionList = () => {
     }
   }, [filters.type]);
 
-  // Handle Filter Changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Apply Filters to Transactions
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = new Date(transaction.date);
     const isWithinDateRange =
@@ -113,7 +107,6 @@ export const TransactionList = () => {
     return isWithinDateRange && isTypeMatch && isCategoryMatch;
   });
 
-  // Format Date to `DD/MM/YYYY`
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
@@ -122,7 +115,6 @@ export const TransactionList = () => {
     return `${day}/${month}/${year}`;
   };
 
-  // Generate Report
   const generateReport = async () => {
     try {
       const user_id = localStorage.getItem("id");
@@ -131,7 +123,6 @@ export const TransactionList = () => {
       const startDate = filters.startDate ? filters.startDate.split("-").reverse().join("/") : "";
       const endDate = filters.endDate ? filters.endDate.split("-").reverse().join("/") : "";
 
-      // Fix: Send start_date and end_date as query parameters (not JSON body)
       const response = await axios.post(
         `/generateTransactionReport?user_id=${user_id}&start_date=${startDate}&end_date=${endDate}`
       );
@@ -147,6 +138,39 @@ export const TransactionList = () => {
       alert("Error generating report. Please try again.");
     }
   };
+
+  const navigate = useNavigate();
+
+  const handleEditTransaction = (transaction) => {
+    navigate("/user/addtransaction", { state: { transaction } });
+  };
+
+
+
+
+
+
+const handleDeleteTransaction = async (transactionId) => {
+    try {
+      const user_id = localStorage.getItem("id"); // Get user ID from local storage
+      if (!user_id) return alert("User ID not found. Please log in.");
+
+      const response = await axios.delete(`/deleteTransaction/${transactionId}`, {
+        params: { user_id },
+      });
+
+      if (response.status === 200) {
+        alert("Transaction deleted successfully!");
+        fetchTransactions(); // Refresh the transaction list
+      } else {
+        alert("Failed to delete transaction.");
+      }
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      alert("Error deleting transaction. Please try again.");
+    }
+  };
+
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
@@ -248,8 +272,6 @@ export const TransactionList = () => {
 
       </div>
 
-
-
       {/* Transaction List */}
       <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950 ">
         <div className="mt-6 bg-white dark:bg-gray-950 p-4 rounded-lg shadow-inner">
@@ -283,18 +305,29 @@ export const TransactionList = () => {
                   </span>
                 </div>
                 <div className="flex space-x-3">
+                <button
+  onClick={() => handleEditTransaction(transaction)}
+  className="text-violet-500 hover:text-violet-700"
+>
+  <FaEdit />
+</button>
+
+
+
+
+
+
+
+
+
+
                   <button
-                    onClick={() => alert(`Edit transaction ${transaction._id}`)}
-                    className="text-violet-500 hover:text-violet-700"
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => alert(`Delete transaction ${transaction._id}`)}
+                    onClick={() => handleDeleteTransaction(transaction._id)}
                     className="text-red-500 hover:text-red-700"
                   >
                     <FaTrash />
                   </button>
+
                 </div>
               </li>
             ))}

@@ -19,3 +19,6 @@ userprofile is 80% complete only delete and deactivate function remains
 
 02-04-2025
 add chart in dashboard and report list compnent
+
+04-04-2025
+update and delete button is working in transaction and category list and redirect you to transaction and category form
