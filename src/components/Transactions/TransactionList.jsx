@@ -145,12 +145,7 @@ export const TransactionList = () => {
     navigate("/user/addtransaction", { state: { transaction } });
   };
 
-
-
-
-
-
-const handleDeleteTransaction = async (transactionId) => {
+  const handleDeleteTransaction = async (transactionId) => {
     try {
       const user_id = localStorage.getItem("id"); // Get user ID from local storage
       if (!user_id) return alert("User ID not found. Please log in.");
@@ -305,22 +300,12 @@ const handleDeleteTransaction = async (transactionId) => {
                   </span>
                 </div>
                 <div className="flex space-x-3">
-                <button
-  onClick={() => handleEditTransaction(transaction)}
-  className="text-violet-500 hover:text-violet-700"
->
-  <FaEdit />
-</button>
-
-
-
-
-
-
-
-
-
-
+                  <button
+                    onClick={() => handleEditTransaction(transaction)}
+                    className="text-violet-500 hover:text-violet-700"
+                  >
+                    <FaEdit />
+                  </button>
                   <button
                     onClick={() => handleDeleteTransaction(transaction._id)}
                     className="text-red-500 hover:text-red-700"
