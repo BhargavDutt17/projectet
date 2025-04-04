@@ -84,27 +84,36 @@ const TransactionChart = () => {
         <h1 className="text-2xl text-violet-500 font-bold text-center mb-6">Transaction Overview</h1>
 
         <div className="flex justify-center gap-4 mb-6">
-          <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="p-2 border rounded bg-gray-100">
+          <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} 
+          className="p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+                bg-white dark:bg-slate-700 border border-violet-500 text-violet-500">
             {["all", ...new Set(transactions.map((t) => t.date.split("-")[0]))].map((year) => (
               <option key={year} value={year}>{year === "all" ? "All Years" : year}</option>
             ))}
           </select>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="p-2 border rounded bg-gray-100" />
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="p-2 border rounded bg-gray-100" />
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} 
+          className="p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+                bg-white dark:bg-slate-700 border border-violet-500 text-violet-500" />
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} 
+          className="p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+                bg-white dark:bg-slate-700 border border-violet-500 text-violet-500" />
         </div>
 
-        {loading ? <p className="text-center">Loading...</p> : error ? <p className="text-center text-red-500">{error}</p> : filteredTransactions.length === 0 ? <p className="text-center text-gray-500">No transactions found for this period.</p> : (
+        {loading ? <p className="text-center">Loading...</p> : error ? 
+        <p className="text-center text-red-500">{error}</p> : filteredTransactions.length === 0 ? 
+        <p className="text-center text-violet-500">No transactions found for this period.</p> : (
           <>
             <div className="flex justify-center mb-4 border-b border-gray-300 dark:border-gray-700">
               {tabs.map((tab, index) => (
-                <button key={index} onClick={() => setActiveTab(index)} className={`py-2 px-4 text-sm font-medium transition ${activeTab === index ? "text-violet-500 border-b-2 border-violet-500" : "text-gray-500 hover:text-violet-500"}`}>
+                <button key={index} onClick={() => setActiveTab(index)} 
+                className={`py-2 px-4 text-sm font-medium transition ${activeTab === index ? "text-violet-500 border-b-2 border-violet-500" : "text-gray-500 hover:text-violet-500"}`}>
                   {tab.title}
                 </button>
               ))}
             </div>
 
             <div className="flex flex-col items-center">
-              <h2 className="text-xl font-semibold text-center mb-4">{tabs[activeTab].title}</h2>
+              <h2 className="text-xl font-semibold text-center mb-4 text-violet-500">{tabs[activeTab].title}</h2>
               <div style={{ height: "350px", width: "350px" }}>{tabs[activeTab].content}</div>
             </div>
           </>

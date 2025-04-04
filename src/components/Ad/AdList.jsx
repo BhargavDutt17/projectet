@@ -43,12 +43,12 @@ export const AdList = () => {
     return (
         <div className="w-full p-4 bg-white dark:bg-gray-950 rounded-lg shadow-lg">
             {/* Dropdown Button */}
-            <button 
-                onClick={() => setIsOpen(!isOpen)} 
+            <button
+                onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center justify-between w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-800 hover:to-purple-900 
           text-violet-200 font-bold p-3 rounded-lg shadow-md"
             >
-                <span className="text-lg font-semibold">Show Ads & Tips</span>
+                <span className="text-lg font-semibold">Finacial Tips</span>
                 {isOpen ? <FaChevronUp /> : <FaChevronDown />}
             </button>
 
@@ -56,17 +56,17 @@ export const AdList = () => {
             {isOpen && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 w-full">
                     {ads.map((ad, index) => (
-                        <a 
-                            key={index} 
-                            href={`https://www.google.com/search?q=${ad.title}`} 
-                            target="_blank" 
+                        <a
+                            key={index}
+                            href={`https://www.google.com/search?q=${ad.title}`}
+                            target="_blank"
                             rel="noopener noreferrer"
                         >
                             <div className="p-6 bg-white dark:bg-slate-700 rounded-xl shadow-lg w-full h-60 transition-transform transform hover:scale-105">
                                 {ad.image_url ? (
-                                    <img 
-                                        src={ad.image_url} 
-                                        alt={ad.title} 
+                                    <img
+                                        src={ad.image_url}
+                                        alt={ad.title}
                                         className="w-full h-32 object-cover rounded-md"
                                     />
                                 ) : (
