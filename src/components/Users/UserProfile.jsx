@@ -122,6 +122,55 @@ export const UserProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const userId = localStorage.getItem("id");
+    const role = localStorage.getItem("role"); // Needed for admin bypass logic
+    const password = prompt("Please confirm your password to delete your account:");
+
+    if (!password) {
+      alert("Password is required to delete account.");
+      return;
+    }
+
+    try {
+      const res = await axios.delete(`/user/delete/${userId}`, {
+        data: { password, role }, // password required unless admin
+      });
+
+      alert(res.data.message || "Account deleted successfully.");
+      localStorage.clear();
+      window.location.href = "/"; // Redirect to home/login
+    } catch (error) {
+      console.error("Delete Error:", error);
+      alert(error?.response?.data?.message || "Failed to delete account.");
+    }
+  };
+
+  const handleDeactivateAccount = async () => {
+    const userId = localStorage.getItem("id");
+    const role = localStorage.getItem("role"); // For backend logic if needed
+    const password = prompt("Please confirm your password to deactivate your account:");
+
+    if (!password) {
+      alert("Password is required to deactivate account.");
+      return;
+    }
+
+    try {
+      const res = await axios.put(`/user/deactivate/${userId}`, {
+        password,
+        role,
+      });
+
+      alert(res.data.message || "Account deactivated successfully.");
+      localStorage.clear();
+      window.location.href = "/"; // Redirect to login
+    } catch (error) {
+      console.error("Deactivate Error:", error);
+      alert(error?.response?.data?.message || "Failed to deactivate account.");
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 p-6">
@@ -176,12 +225,14 @@ export const UserProfile = () => {
             <div className="mt-12 flex flex-col space-y-4 w-full">
               <button className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 
               hover:to-rose-900 text-red-200 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 
-              focus:ring-red-600 text-center py-2 px-4 rounded flex items-center justify-center w-full">
+              focus:ring-red-600 text-center py-2 px-4 rounded flex items-center justify-center w-full"
+                onClick={handleDeleteAccount} >
                 <FaTrash className="mr-2" /> Delete
               </button>
               <button className="bg-gradient-to-r from-yellow-500 to-orange-700 hover:from-yellow-800 
               hover:to-orange-900 text-red-200 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 
-              focus:ring-yellow-600 text-center py-2 px-4 rounded flex items-center justify-center w-full">
+              focus:ring-yellow-600 text-center py-2 px-4 rounded flex items-center justify-center w-full"
+                onClick={handleDeactivateAccount} >
                 <FaBan className="mr-2" /> Deactivate
               </button>
             </div>

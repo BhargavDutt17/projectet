@@ -69,7 +69,7 @@ export const TransactionReport = () => {
 
   const handleDeleteReport = useCallback(async (reportId) => {
     try {
-      await axios.delete(`/transaction-reports/${reportId}`); // ✅ No user_id, No role check
+      await axios.delete(`/transaction-reports/${reportId}`); // No user_id, No role check
 
       startTransition(() => {
         setReports((prevReports) => prevReports.filter((r) => r._id !== reportId));

@@ -22,3 +22,6 @@ add chart in dashboard and report list compnent
 
 04-04-2025
 update and delete button is working in transaction and category list and redirect you to transaction and category form
+
+08-04-2025
+delete and deactivate account is working in user profile
