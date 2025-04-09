@@ -49,7 +49,7 @@ export const AdminPrivateNavbar = () => {
       { path: "/admin/admintransactions", label: "Admin2" },
       { path: "/admin/admin", label: "Admin3" },
       { path: "/admin/admin", label: "Admin4" },
-      { path: "/admin/admin", label: "Dashboard" },
+      { path: "/admin/dashboard", label: "Dashboard" },
     ];
   
 

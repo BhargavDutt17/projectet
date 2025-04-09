@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes, useLocation, Navigate } from "react-router-dom";
 import axios from "axios";
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { Login } from "./components/Users/Login";
 import { Register } from "./components/Users/Register";
 import { TransactionForm } from "./components/Transactions/TransactionForm";
@@ -15,9 +15,11 @@ import { AdminTransactionList } from "./components/Transactions/AdminTransaction
 import PrivateRoutes from "./components/hooks/PrivateRoutes";
 import { AdminAddCategory } from "./components/Category/AdminAddCategory";
 import { CategoriesList } from "./components/Category/CategoriesList";
-import {UserProfile} from "./components/Users/UserProfile"
+import { UserProfile } from "./components/Users/UserProfile"
 import { TransactionReport } from "./components/Transactions/TransactionReport";
 import { TransactionList } from "./components/Transactions/TransactionList";
+import Activate  from "./components/Users/Activate";
+import { UserList } from "./components/Admin/UserList";
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -32,19 +34,23 @@ function App() {
     };
 
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("customLogout", handleStorageChange);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("customLogout", handleStorageChange);
     };
   }, []);
 
   return (
     <BrowserRouter>
-      <NavbarHandler role={role} />
+      <NavbarHandler role={role} setRole={setRole} />
+
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login setRole={setRole} />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/activate" element={<Activate />} />
 
         {/* User Routes */}
         <Route element={<PrivateRoutes requiredRole="user" />}>
@@ -52,10 +58,10 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="addtransaction" element={<TransactionForm />} />
             <Route path="addcategory" element={<AddCategory />} />
-            <Route path="categorieslist" element={<CategoriesList/>}/>
-            <Route path="profile" element={<UserProfile/>}/>
-            <Route path="transactionreports" element={<TransactionReport/>}/>
-            <Route path="trasactionlists" element={<TransactionList/>}/>
+            <Route path="categorieslist" element={<CategoriesList />} />
+            <Route path="profile" element={<UserProfile />} />
+            <Route path="transactionreports" element={<TransactionReport />} />
+            <Route path="trasactionlists" element={<TransactionList />} />
           </Route>
         </Route>
 
@@ -64,7 +70,8 @@ function App() {
           <Route path="/admin">
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="admintransactions" element={<AdminTransactionList />} />
-            <Route path="adminaddcategory" element={<AdminAddCategory/>}/>
+            <Route path="adminaddcategory" element={<AdminAddCategory />} />
+            <Route path="userlist" element={<UserList/>}/>
           </Route>
         </Route>
 
@@ -75,16 +82,11 @@ function App() {
 }
 
 // NavbarHandler component to manage navbar rendering
-const NavbarHandler = ({ role }) => {
-  const location = useLocation();
-  const publicPaths = ["/", "/login", "/register"];
-  const isPublicPath = publicPaths.includes(location.pathname);
-  
-  return (
-    <>
-      {isPublicPath || !role ? (<PublicNavbar /> ) : role === "admin" ? (<AdminPrivateNavbar />) : (<PrivateNavbar />)}
-    </>
-  );
-};
+function NavbarHandler({ role, setRole }) {
+  if (role === "admin") return <PrivateNavbar setRole={setRole} />;
+  if (role === "user") return <PrivateNavbar setRole={setRole} />;
+  return <PublicNavbar />;
+}
+
 
 export default App;

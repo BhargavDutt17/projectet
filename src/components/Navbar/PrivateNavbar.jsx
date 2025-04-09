@@ -10,38 +10,73 @@ export const PrivateNavbar = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [username, setUsername] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [role, setRole] = useState(localStorage.getItem("role") || "");
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchUserData = () => {
     const userId = localStorage.getItem("id");
-    if (userId) {
+    const userRole = localStorage.getItem("role");
+
+    if (userId && userRole) {
+      setRole(userRole);
       axios.get(`/user/profile/${userId}`)
         .then(response => {
           if (response.data) {
             setProfileImage(response.data.profile_image || null);
-            setUsername(response.data.username || "User");
+            setUsername(response.data.username || "Admin");
           }
         })
         .catch(error => console.error("Error fetching profile data:", error));
+    } else {
+      setRole(""); // User is logged out
+      setProfileImage(null);
+      setUsername("");
     }
-  }, []);
+  };
 
+  useEffect(() => {
+    fetchUserData();
+
+    const handleLogout = () => {
+      fetchUserData();
+    };
+
+    window.addEventListener("customLogout", handleLogout);
+    return () => window.removeEventListener("customLogout", handleLogout);
+  }, []);
 
   const logoutHandler = () => {
     localStorage.removeItem("id");
     localStorage.removeItem("role");
+    localStorage.removeItem("role_id");
+
+    // Dispatch custom event so both App.jsx and this component sync
+    window.dispatchEvent(new Event("customLogout"));
+
     navigate("/login");
   };
 
-  const menuItems = [
+  // 👇 This is for testing
+  console.log("Current role in PrivateNavbar:", role);
+
+  const userMenuItems = [
     { path: "/user/dashboard", label: "Dashboard" },
     { path: "/user/addtransaction", label: "Add Transaction" },
     { path: "/user/addcategory", label: "Add Category" },
     { path: "/user/categorieslist", label: "Categories" },
     { path: "/user/profile", label: "Profile" },
-    {path: "/user/transactionreports", label:"Transaction Report"},
-    {path: "/user/trasactionlists", label:"Trasaction List"}
+    { path: "/user/transactionreports", label: "Transaction Report" },
+    { path: "/user/trasactionlists", label: "Trasaction List" }
   ];
+
+  const adminMenuItems = [
+    { path: "/admin/adminaddcategory", label: "Admin1" },
+    { path: "/admin/admintransactions", label: "Admin2" },
+    { path: "/admin/userlist", label: "UserList" },
+    { path: "/admin/dashboard", label: "Admin4" },
+    { path: "/admin/dashboard", label: "Dashboard" },
+  ];
+
 
   return (
     <nav className="bg-white dark:bg-gray-950 shadow sticky top-0 z-50">
@@ -136,7 +171,6 @@ export const PrivateNavbar = () => {
         </div>
       )}
 
-
       {/* Drawer (Sidebar) */}
       {isDrawerOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setIsDrawerOpen(false)}>
@@ -156,7 +190,7 @@ export const PrivateNavbar = () => {
 
               {/* Drawer Links */}
               <nav className="flex flex-col space-y-4">
-                {menuItems.map((item) => (
+                {(role === "admin" ? adminMenuItems : userMenuItems).map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
