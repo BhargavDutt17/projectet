@@ -119,14 +119,25 @@ export const TransactionList = () => {
     try {
       const user_id = localStorage.getItem("id");
       if (!user_id) return alert("User ID not found. Please log in.");
-
-      const startDate = filters.startDate ? filters.startDate.split("-").reverse().join("/") : "";
-      const endDate = filters.endDate ? filters.endDate.split("-").reverse().join("/") : "";
-
-      const response = await axios.post(
-        `/generateTransactionReport?user_id=${user_id}&start_date=${startDate}&end_date=${endDate}`
-      );
-
+  
+      const startDate = filters.startDate
+        ? filters.startDate.split("-").reverse().join("/")
+        : "";
+      const endDate = filters.endDate
+        ? filters.endDate.split("-").reverse().join("/")
+        : "";
+  
+      const params = new URLSearchParams({
+        user_id,
+        start_date: startDate,
+        end_date: endDate,
+      });
+  
+      if (filters.type) params.append("category_id", filters.type);
+      if (filters.category) params.append("subcategory_id", filters.category);
+  
+      const response = await axios.post(`/generateTransactionReport?${params.toString()}`);
+  
       if (response.data.report_file_url) {
         alert("Report generated successfully!");
         setReportUrl(response.data.report_file_url);
@@ -138,6 +149,7 @@ export const TransactionList = () => {
       alert("Error generating report. Please try again.");
     }
   };
+  
 
   const navigate = useNavigate();
 

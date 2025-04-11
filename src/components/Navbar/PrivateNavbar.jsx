@@ -56,8 +56,8 @@ export const PrivateNavbar = () => {
     navigate("/login");
   };
 
-  // 👇 This is for testing
-  console.log("Current role in PrivateNavbar:", role);
+  // // This is for testing
+  // console.log("Current role in PrivateNavbar:", role);
 
   const userMenuItems = [
     { path: "/user/dashboard", label: "Dashboard" },
@@ -70,11 +70,12 @@ export const PrivateNavbar = () => {
   ];
 
   const adminMenuItems = [
-    { path: "/admin/adminaddcategory", label: "Admin1" },
-    { path: "/admin/admintransactions", label: "Admin2" },
-    { path: "/admin/userlist", label: "UserList" },
-    { path: "/admin/dashboard", label: "Admin4" },
     { path: "/admin/dashboard", label: "Dashboard" },
+    { path: "/admin/userlist", label: "UserList" },
+    { path: "/admin/admintransactionlists", label: "User Transaction" },
+    { path: "/admin/addtransactiontype", label: "Add Transaction Type" },
+    { path: "/admin/addcategory", label: "Add Category" },
+    { path: "/admin/transactiontypelist", label: "Transaction Types" },
   ];
 
 

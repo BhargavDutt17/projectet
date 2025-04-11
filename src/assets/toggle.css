@@ -1,0 +1,54 @@
+.switch {
+    font-size: 1rem;
+    position: relative;
+    display: inline-block;
+    width: 1.75em;
+    height: 1em;
+    vertical-align: middle;
+  }
+  
+  /* Hide default checkbox */
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: white;
+    border: 1px solid #8b5cf6; /* violet-500 */
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  
+  /* Dark mode */
+  @media (prefers-color-scheme: dark) {
+    .slider {
+      background: #0f0f0f;
+      border-color: #8b5cf6;
+    }
+  }
+  
+  /* Toggle Circle */
+  .slider::after {
+    content: "";
+    position: absolute;
+    width: 0.7em;
+    height: 0.7em;
+    left: 0.15em;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #7c3aed; /* violet-600 */
+    border-radius: 9999px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+  
+  .switch input:checked + .slider::after {
+    transform: translate(0.7em, -50%);
+    background-color: #8b5cf6; /* violet-500 */
+  }
+  
+  

@@ -20,6 +20,8 @@ import { TransactionReport } from "./components/Transactions/TransactionReport";
 import { TransactionList } from "./components/Transactions/TransactionList";
 import Activate  from "./components/Users/Activate";
 import { UserList } from "./components/Admin/UserList";
+import { AddTransactionType} from "./components/Transactions/AddTransactionType";
+import { AdminTransactionTypeList } from "./components/Transactions/AdminTransactionTypeList";
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -69,10 +71,13 @@ function App() {
         <Route element={<PrivateRoutes requiredRole="admin" />}>
           <Route path="/admin">
             <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="admintransactions" element={<AdminTransactionList />} />
-            <Route path="adminaddcategory" element={<AdminAddCategory />} />
+            <Route path="admintransactionlists" element={<AdminTransactionList />} />
+            <Route path="addcategory" element={<AdminAddCategory />} />
             <Route path="userlist" element={<UserList/>}/>
+            <Route path="addtransactiontype" element={<AddTransactionType/>}/>
+            <Route path="transactiontypelist" element={<AdminTransactionTypeList/>}/>
           </Route>
+          {/* <Route path="/user/admintransactionlists/:user_id" element={<AdminTransactionList />} /> */}
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
