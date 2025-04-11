@@ -11,7 +11,7 @@ export const AddCategory = () => {
     const [categories, setCategories] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
-
+    
     const user_id = localStorage.getItem("id") || "";
     const role_id = localStorage.getItem("role_id") || "";
     const role_name = localStorage.getItem("role") || "user";
@@ -39,34 +39,37 @@ export const AddCategory = () => {
     }, [editingCategory, setValue]);
 
     const onSubmit = async (data) => {
-        const payload = {
-            name: data.name.trim(),
-            description: data.description?.trim() || "",
-        };
-
         try {
+            const categoryData = {
+                name: data.name,
+                category_id: data.category_id,
+                description: `(Userdefined) ${data.description.trim() || ""}`, // Ensure description is never undefined
+                user_id,
+                role_id,
+                role_name
+            };
+
+            console.log("Saving category with data:", categoryData); // Debugging log
+
             let response;
-            if (editingCategory && editingCategory._id) {
-                response = await axios.put(`/updateCategory/${editingCategory._id}`, payload);
-                alert(response.data.message);
-                reset();
-                navigate("/admin/admintransactiontypelist");
+            if (editingCategory) {
+                response = await axios.put(`/editSubcategory/${editingCategory._id}`, categoryData);
+                if (response.status === 200) {
+                    alert(response.data.message);
+                    navigate("/user/categorieslist"); // Redirect after update
+                }
             } else {
-                response = await axios.post("/addCategory", {
-                    ...payload,
-                    user_id,
-                    role_id,
-                    role_name,
-                });
-                alert(response.data.message);
-                reset();
+                response = await axios.post("/addSubCategory", categoryData);
+                if (response.status === 201) {
+                    alert(response.data.message);
+                    reset(); // Clear form fields after adding a new category
+                }
             }
-        } catch (err) {
-            console.error("Error adding/editing category:", err.response?.data || err.message);
-            alert("Something went wrong.");
+        } catch (error) {
+            console.error("Error saving category:", error.response?.data || error.message);
+            alert("Failed to save category");
         }
     };
-
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 pt-6 transition-colors duration-300">
@@ -78,7 +81,6 @@ export const AddCategory = () => {
                     <h2 className="text-2xl font-semibold text-violet-500">
                         {editingCategory ? "Edit Category" : "Add Custom Category"}
                     </h2>
-                    <p className="text-violet-500 font-medium">Fill in the details below.</p>
                 </div>
 
                 <div className="space-y-2">

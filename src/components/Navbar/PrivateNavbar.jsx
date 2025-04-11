@@ -76,6 +76,7 @@ export const PrivateNavbar = () => {
     { path: "/admin/addtransactiontype", label: "Add Transaction Type" },
     { path: "/admin/addcategory", label: "Add Category" },
     { path: "/admin/transactiontypelist", label: "Transaction Types" },
+    { path: "/admin/admincategorieslist", label: "Categories List" },
   ];
 
 

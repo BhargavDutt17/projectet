@@ -22,6 +22,7 @@ import Activate  from "./components/Users/Activate";
 import { UserList } from "./components/Admin/UserList";
 import { AddTransactionType} from "./components/Transactions/AddTransactionType";
 import { AdminTransactionTypeList } from "./components/Transactions/AdminTransactionTypeList";
+import { AdminCategoriesList } from "./components/Category/AdminCategoriesList";
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -76,6 +77,7 @@ function App() {
             <Route path="userlist" element={<UserList/>}/>
             <Route path="addtransactiontype" element={<AddTransactionType/>}/>
             <Route path="transactiontypelist" element={<AdminTransactionTypeList/>}/>
+            <Route path="admincategorieslist" element={<AdminCategoriesList/>}/>
           </Route>
           {/* <Route path="/user/admintransactionlists/:user_id" element={<AdminTransactionList />} /> */}
         </Route>
