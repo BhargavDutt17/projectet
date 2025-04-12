@@ -10,12 +10,11 @@ import { PrivateNavbar } from "./components/Navbar/PrivateNavbar";
 import { AddCategory } from "./components/Category/AddCategory";
 import { Dashboard } from "./components/Users/Dashboard";
 import { AdminDashboard } from "./components/Users/AdminDashboard";
-import { AdminPrivateNavbar } from "./components/Navbar/AdminPrivateNavbar";
 import { AdminTransactionList } from "./components/Transactions/AdminTransactionList";
 import PrivateRoutes from "./components/hooks/PrivateRoutes";
 import { AdminAddCategory } from "./components/Category/AdminAddCategory";
 import { CategoriesList } from "./components/Category/CategoriesList";
-import { UserProfile } from "./components/Users/UserProfile"
+import { Profile} from "./components/Users/Profile"
 import { TransactionReport } from "./components/Transactions/TransactionReport";
 import { TransactionList } from "./components/Transactions/TransactionList";
 import Activate  from "./components/Users/Activate";
@@ -23,6 +22,8 @@ import { UserList } from "./components/Admin/UserList";
 import { AddTransactionType} from "./components/Transactions/AddTransactionType";
 import { AdminTransactionTypeList } from "./components/Transactions/AdminTransactionTypeList";
 import { AdminCategoriesList } from "./components/Category/AdminCategoriesList";
+import { UserReport } from "./components/Admin/UserReport";
+
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -62,7 +63,7 @@ function App() {
             <Route path="addtransaction" element={<TransactionForm />} />
             <Route path="addcategory" element={<AddCategory />} />
             <Route path="categorieslist" element={<CategoriesList />} />
-            <Route path="profile" element={<UserProfile />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="transactionreports" element={<TransactionReport />} />
             <Route path="trasactionlists" element={<TransactionList />} />
           </Route>
@@ -78,6 +79,8 @@ function App() {
             <Route path="addtransactiontype" element={<AddTransactionType/>}/>
             <Route path="transactiontypelist" element={<AdminTransactionTypeList/>}/>
             <Route path="admincategorieslist" element={<AdminCategoriesList/>}/>
+            <Route path="userreport" element={<UserReport/>}/>
+            <Route path="profile" element={<Profile/>}/>
           </Route>
           {/* <Route path="/user/admintransactionlists/:user_id" element={<AdminTransactionList />} /> */}
         </Route>

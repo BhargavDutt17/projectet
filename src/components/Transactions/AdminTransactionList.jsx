@@ -157,29 +157,29 @@ export const AdminTransactionList = () => {
 
 
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const handleEditTransaction = (transaction) => {
-    navigate("/user/addtransaction", { state: { transaction } });
-  };
+  // const handleEditTransaction = (transaction) => {
+  //   navigate("/user/addtransaction", { state: { transaction } });
+  // };
 
-  const handleDeleteTransaction = async (transactionId) => {
-    try {
-      const response = await axios.delete(`/deleteTransaction/${transactionId}`, {
-        params: { user_id },
-      });
+  // const handleDeleteTransaction = async (transactionId) => {
+  //   try {
+  //     const response = await axios.delete(`/deleteTransaction/${transactionId}`, {
+  //       params: { user_id },
+  //     });
 
-      if (response.status === 200) {
-        alert("Transaction deleted successfully!");
-        fetchTransactions();
-      } else {
-        alert("Failed to delete transaction.");
-      }
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-      alert("Error deleting transaction. Please try again.");
-    }
-  };
+  //     if (response.status === 200) {
+  //       alert("Transaction deleted successfully!");
+  //       fetchTransactions();
+  //     } else {
+  //       alert("Failed to delete transaction.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error deleting transaction:", error);
+  //     alert("Error deleting transaction. Please try again.");
+  //   }
+  // };
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
@@ -302,7 +302,7 @@ export const AdminTransactionList = () => {
                     {transaction.description}
                   </span>
                 </div>
-                <div className="flex space-x-3">
+                {/* <div className="flex space-x-3">
                   <button
                     onClick={() => handleEditTransaction(transaction)}
                     className="text-violet-500 hover:text-violet-700"
@@ -315,7 +315,7 @@ export const AdminTransactionList = () => {
                   >
                     <FaTrash />
                   </button>
-                </div>
+                </div> */}
               </li>
             ))}
           </ul>

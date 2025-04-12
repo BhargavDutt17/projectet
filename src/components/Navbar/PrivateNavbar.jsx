@@ -77,6 +77,8 @@ export const PrivateNavbar = () => {
     { path: "/admin/addcategory", label: "Add Category" },
     { path: "/admin/transactiontypelist", label: "Transaction Types" },
     { path: "/admin/admincategorieslist", label: "Categories List" },
+    { path: "/admin/userreport", label: "Users Report" },
+    { path: "/admin/profile", label: "Profile" },
   ];
 
 
@@ -150,15 +152,20 @@ export const PrivateNavbar = () => {
             <div className="mt-8 space-y-2 w-full">
               <button
                 className="w-full mb-4 inline-flex items-center rounded-md bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-800 
-              hover:to-purple-900 text-violet-300 px-14 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 
-              focus:ring-indigo-600"
+    hover:to-purple-900 text-violet-300 px-14 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 
+    focus:ring-indigo-600"
                 onClick={() => {
                   setIsModalOpen(false);
-                  navigate("/user/profile");
+                  if (role === "admin") {
+                    navigate("/admin/profile"); // Redirect admin to the admin profile page
+                  } else {
+                    navigate("/user/profile"); // Redirect regular user to the user profile page
+                  }
                 }}
               >
                 Go to Profile
               </button>
+
               <button
                 className="w-full inline-flex items-center gap-x-1.5 rounded-md bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 
               hover:to-rose-900 text-red-200 px-14 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 
@@ -191,7 +198,7 @@ export const PrivateNavbar = () => {
               </button>
 
               {/* Drawer Links */}
-              <nav className="flex flex-col space-y-4">
+              <nav className="flex flex-col space-y-2">
                 {(role === "admin" ? adminMenuItems : userMenuItems).map((item) => (
                   <Link
                     key={item.path}

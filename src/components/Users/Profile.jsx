@@ -4,7 +4,7 @@ import { FaUser, FaEnvelope, FaEdit, FaLock, FaCamera, FaTrash, FaBan } from "re
 import { IoPersonCircleOutline } from "react-icons/io5";
 import axios from "axios";
 
-export const UserProfile = () => {
+export const Profile = () => {
 
   const [isUsernameEditing, setIsUsernameEditing] = useState(false);
   const [isEmailEditing, setIsEmailEditing] = useState(false);
@@ -171,6 +171,18 @@ export const UserProfile = () => {
     }
   };
 
+  const handleDeleteProfileImage = async () => {
+    try {
+      const res = await axios.delete(`/users/delete-profile-image/${user_id}`);
+      alert("Profile picture deleted successfully.");
+      setUser((prev) => ({ ...prev, profile_image: null }));
+    } catch (error) {
+      console.error("Error deleting profile picture:", error);
+      alert("Failed to delete profile picture.");
+    }
+  };
+
+
   return (
     <>
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 p-6">
@@ -178,7 +190,7 @@ export const UserProfile = () => {
           {/* Profile Picture Section (Left Side) */}
           <div className="flex flex-col items-center w-1/3 border-r border-violet-500 pr-6">
             <div className="relative">
-              <div>
+              <div className="relative flex flex-col items-center">
                 {userData.profile_image ? (
                   <img
                     src={userData.profile_image}
@@ -187,8 +199,8 @@ export const UserProfile = () => {
                   />
                 ) : (
                   <IoPersonCircleOutline className="h-80 w-80 text-violet-500 border-4 border-violet-500 border-dotted rounded-full animate-border-glow" />
-
                 )}
+
                 <input
                   type="file"
                   accept="image/*"
@@ -198,12 +210,24 @@ export const UserProfile = () => {
                 />
 
                 <button
-                  className="absolute bottom-7 right-7 bg-purple-700 text-white p-3 rounded-full hover:bg-violet-700 transition"
-                  onClick={() => document.getElementById("fileInput").click()}  //Opens file picker
+                  className="absolute bottom-24 right-4 bg-purple-700 text-white p-3 rounded-full hover:bg-violet-700 transition"
+                  onClick={() => document.getElementById("fileInput").click()}
                 >
                   <FaCamera className="text-lg" />
                 </button>
+
+                {/* Delete profile image button */}
+                {userData.profile_image && (
+                  <button
+                    onClick={handleDeleteProfileImage}
+                    className="mt-4 flex items-center justify-center bg-rose-600 hover:bg-rose-800 text-white px-4 py-2 rounded-full transition"
+                  >
+                    <FaTrash className="mr-2" />
+                    Delete Profile Image
+                  </button>
+                )}
               </div>
+
             </div>
             {/* Username under Profile Picture */}
             <div className="mt-4 flex items-center space-x-3 bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg shadow shadow-violet-500/100">

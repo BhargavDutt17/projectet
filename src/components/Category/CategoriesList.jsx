@@ -27,8 +27,14 @@ export const CategoriesList = () => {
             const formattedCategories = response.data.map(subcategory => ({
                 _id: subcategory._id,
                 name: subcategory.name,
-                type: subcategory.category_type || "unknown",
-                description: subcategory.description?.trim() || "" // Ensure empty descriptions are properly recognized
+                category_id: {
+                    _id: subcategory.category_id?._id || subcategory.category_id,
+                    name: subcategory.category_id?.name || "Unknown Category"
+                },
+                type: subcategory.category_id?.name?.toLowerCase() || "unknown",  // Standardize type to lowercase for comparison
+                description: subcategory.description
+                    ?.replace(/^\((Userdefined|Admindefined)\)\s*/, "")
+                    .trim() || "(No Description)"
             }));
 
             console.log("Formatted Categories:", formattedCategories); // Debugging log
@@ -66,11 +72,12 @@ export const CategoriesList = () => {
                         <div>
                             <span className="font-medium text-gray-950 dark:text-white">{category.name}</span>
                             <span
-                                className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    category.type === "income"
-                                        ? "bg-green-200 text-green-800"
-                                        : "bg-red-200 text-red-800"
-                                }`}
+                                className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${category.type === "income"
+                                    ? "bg-green-200 text-green-800"
+                                    : category.type === "expense"  // Check for "expense" as well
+                                        ? "bg-red-200 text-red-800"
+                                        : "bg-gray-200 text-gray-800"  // Fallback if neither "income" nor "expense"
+                                    }`}
                             >
                                 {category.type
                                     ? category.type.charAt(0).toUpperCase() + category.type.slice(1)

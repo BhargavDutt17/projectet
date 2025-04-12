@@ -14,44 +14,40 @@ export const AdminCategoriesList = () => {
     const fetchCategories = async () => {
         try {
             const userId = localStorage.getItem("id");
-            const roleId = localStorage.getItem("role_id"); // Should be the actual role ObjectId
-      
+            const roleId = localStorage.getItem("role_id");
+            const role = localStorage.getItem("role");
 
-    
-            if (!userId || !roleId) {
-                console.error("User ID or Role ID not found in localStorage");
+            if (!userId || !roleId || !role) {
+                console.error("Missing role or user_id");
                 return;
             }
-    
-            // If admin, only pass role_id to get all admin-created subcategories
-            const role = localStorage.getItem("role");
-            const params = role === "admin"
-              ? { role_id: roleId }
-              : { user_id: userId, role_id: roleId };
-            
-    
-            const response = await axios.get(`/getAllSubCategories`, { params });
-    
+
+            const response = await axios.get(`/getSubCategoryByCategoryId/all`, {
+                params: { user_id: userId, role_id: roleId }
+            });
+
+
             const formattedCategories = response.data.map(subcategory => ({
                 _id: subcategory._id,
                 name: subcategory.name,
-                type: subcategory.category_type || "unknown",
-                description: subcategory.description?.trim() || ""
+                category_id: {
+                    _id: subcategory.category_id?._id || subcategory.category_id,
+                    name: subcategory.category_id?.name || "Unknown Category"
+                },
+                type: subcategory.category_id?.name?.toLowerCase() || "unknown",  // Standardize type to lowercase for comparison
+                description: subcategory.description
+                    ?.replace(/^\((Userdefined|Admindefined)\)\s*/, "")
+                    .trim() || "(No Description)"
             }));
-    
-            console.log("Formatted Categories:", formattedCategories);
             setCategories(formattedCategories);
         } catch (error) {
-            console.error("Error fetching categories:", error);
+            console.error("Error fetching admin subcategories:", error);
         }
     };
-    
-    
-    
 
     const handleDelete = async (id) => {
         try {
-            const response = await axios.delete(`/admin/deleteSubCategory/${id}`);
+            const response = await axios.delete(`/deleteSubCategory/${id}`);
             alert(response.data.message);
             setCategories(categories.filter(category => category._id !== id));
         } catch (error) {
@@ -66,7 +62,14 @@ export const AdminCategoriesList = () => {
 
     return (
         <div className="min-h-screen p-4 flex flex-col items-center bg-white dark:bg-gray-950 text-violet-500">
-            <h2 className="text-xl font-semibold mb-4 text-violet-500 text-center">All Subcategories</h2>
+            <h2 className="text-xl font-semibold mb-4 text-violet-500 text-center">All Admin Subcategories</h2>
+
+            <button
+                onClick={() => navigate("/admin/addcategory")}
+                className="mb-4 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded"
+            >
+                Add New Subcategory
+            </button>
 
             <ul className="mt-4 w-2/3 space-y-4">
                 {categories.map((category) => (
@@ -77,11 +80,12 @@ export const AdminCategoriesList = () => {
                         <div>
                             <span className="font-medium text-gray-950 dark:text-white">{category.name}</span>
                             <span
-                                className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    category.type === "income"
-                                        ? "bg-green-200 text-green-800"
-                                        : "bg-red-200 text-red-800"
-                                }`}
+                                className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${category.type === "income"
+                                    ? "bg-green-200 text-green-800"
+                                    : category.type === "expense"  // Check for "expense" as well
+                                        ? "bg-red-200 text-red-800"
+                                        : "bg-gray-200 text-gray-800"  // Fallback if neither "income" nor "expense"
+                                    }`}
                             >
                                 {category.type
                                     ? category.type.charAt(0).toUpperCase() + category.type.slice(1)
@@ -110,4 +114,3 @@ export const AdminCategoriesList = () => {
         </div>
     );
 };
-

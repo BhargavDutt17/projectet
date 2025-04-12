@@ -4,20 +4,22 @@ import axios from "axios";
 import { FaWallet } from "react-icons/fa";
 import { SiDatabricks } from "react-icons/si";
 import { MdDescription } from "react-icons/md";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const AdminAddCategory = () => {
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm();
+    const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm();
     const [categories, setCategories] = useState([]);
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    // Fetch admin details from localStorage
     const admin_id = localStorage.getItem("id") || "";
     const role_id = localStorage.getItem("role_id") || "";
-    const role_name = localStorage.getItem("role") || "user"; //Fetch role name
+    const role_name = localStorage.getItem("role") || "admin";
 
-    console.log("Admin ID:", admin_id);
-    console.log("Role Name:", role_name); //Debugging
+    // Check if editing existing subcategory
+    const editingCategory = location.state?.category || null;
 
-    // Fetch Categories (Income/Expense)
+    // Fetch all categories (Income/Expense)
     const fetchCategories = async () => {
         try {
             const response = await axios.get("/getAllCategories");
@@ -29,45 +31,44 @@ export const AdminAddCategory = () => {
 
     useEffect(() => {
         fetchCategories();
-    }, []);
 
-    // Handle Category Selection Change
-    const handleCategoryChange = (event) => {
-        setValue("category_id", event.target.value);
-    };
-
-    // Handle Form Submission (Admin-Defined Subcategories)
-    const onSubmit = async (data) => {
-        try {
-            const subCategoryData = {
-                name: data.name.trim(),
-                category_id: data.category_id,
-                description: `(Admindefined) ${data.description.trim() || ""}`,
-                user_id: admin_id,
-                role_id,  
-                role_name 
-            };
-
-            console.log("Payload being sent:", subCategoryData);
-
-            const response = await axios.post("/addSubCategory", subCategoryData);
-
-            alert(response.data.message);
-            fetchCategories();
-        } catch (error) {
-            console.error("Error adding subcategory:", error.response?.data || error.message);
-            alert("Failed to add subcategory");
+        if (editingCategory) {
+            setValue("name", editingCategory.name);
+            setValue("category_id", editingCategory.category_id);
+            setValue("description", editingCategory.description || "");
         }
-    };
+    }, [editingCategory, setValue]);
 
-    // Validation Rules
-    const typeValidation = { required: "Category type is required" };
-    const nameValidation = {
-        required: "Category name is required",
-        minLength: { value: 3, message: "Category name must be at least 3 characters long" },
-    };
-    const descriptionValidation = {
-        minLength: { value: 5, message: "Description must be at least 5 characters long" },
+    const onSubmit = async (data) => {
+        const subCategoryData = {
+            name: data.name.trim(),
+            category_id: data.category_id,
+            description: `(Admindefined) ${data.description.trim() || ""}`,
+            user_id: admin_id,
+            role_id,
+            role_name,
+        };
+
+        try {
+            let response;
+            if (editingCategory) {
+                response = await axios.put(`/editSubcategory/${editingCategory._id}`, subCategoryData);
+                if (response.status === 200) {
+                    alert(response.data.message);
+                    navigate("/admin/categorieslist");
+                }
+            } else {
+                response = await axios.post("/addSubCategory", subCategoryData);
+                if (response.status === 201) {
+                    alert(response.data.message);
+                    reset();
+                    fetchCategories();
+                }
+            }
+        } catch (error) {
+            console.error("Error saving subcategory:", error.response?.data || error.message);
+            alert("Failed to save subcategory");
+        }
     };
 
     return (
@@ -78,20 +79,21 @@ export const AdminAddCategory = () => {
             >
                 <div className="text-center">
                     <h2 className="text-2xl font-semibold text-violet-500">
-                        Add Global Categories
+                        {editingCategory ? "Edit Global Subcategory" : "Add Global Subcategory"}
                     </h2>
-                    <p className="text-violet-500 font-medium">Fill in the details below.</p>
+                    <p className="text-violet-500 font-medium">
+                        {editingCategory ? "Update the details below." : "Fill in the details below."}
+                    </p>
                 </div>
 
-                {/* 🔹 Category Type (Income/Expense) */}
+                {/* Category Type */}
                 <div className="space-y-2">
                     <label className="flex gap-2 items-center text-violet-500 font-medium">
                         <FaWallet className="text-violet-500" />
                         <span>Type</span>
                     </label>
                     <select
-                        {...register("category_id", typeValidation)}
-                        onChange={handleCategoryChange}
+                        {...register("category_id", { required: "Category type is required" })}
                         className="w-full p-2 border border-violet-300 rounded-md focus:border-violet-500 focus:ring-violet-500"
                     >
                         <option value="">Select transaction type</option>
@@ -102,7 +104,7 @@ export const AdminAddCategory = () => {
                     <span className="text-red-500 text-xs">{errors.category_id?.message}</span>
                 </div>
 
-                {/* 🔹 Category Name */}
+                {/* Subcategory Name */}
                 <div className="flex flex-col">
                     <label htmlFor="name" className="text-violet-500 font-medium">
                         <SiDatabricks className="inline mr-2 text-violet-500" />
@@ -110,27 +112,30 @@ export const AdminAddCategory = () => {
                     </label>
                     <input
                         type="text"
-                        {...register("name", nameValidation)}
+                        {...register("name", {
+                            required: "Category name is required",
+                            minLength: { value: 3, message: "Category name must be at least 3 characters long" },
+                        })}
                         placeholder="Enter subcategory name"
                         id="name"
-                        className="w-full mt-1 border border-violet-300 rounded-md shadow-sm 
-                        focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 py-2 px-3"
+                        className="w-full mt-1 border border-violet-300 rounded-md shadow-sm py-2 px-3 focus:border-violet-500 focus:ring-violet-500"
                     />
                     <span className="text-red-500 text-xs">{errors.name?.message}</span>
                 </div>
 
-                {/* 🔹 Description Field */}
+                {/* Description */}
                 <div className="flex flex-col">
                     <label htmlFor="description" className="text-violet-500 font-medium">
                         <MdDescription className="inline mr-2 text-violet-500" />
                         Description
                     </label>
                     <textarea
-                        {...register("description", descriptionValidation)}
-                        placeholder="Explain why and what this category is for"
+                        {...register("description", {
+                            minLength: { value: 5, message: "Description must be at least 5 characters long" },
+                        })}
+                        placeholder="Explain why and what this subcategory is for"
                         id="description"
-                        className="w-full mt-1 border border-violet-300 rounded-md shadow-sm 
-                        focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 py-2 px-3"
+                        className="w-full mt-1 border border-violet-300 rounded-md shadow-sm py-2 px-3 focus:border-violet-500 focus:ring-violet-500"
                     />
                     <span className="text-red-500 text-xs">{errors.description?.message}</span>
                 </div>
@@ -141,7 +146,7 @@ export const AdminAddCategory = () => {
                     className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-800 hover:to-purple-800 
                     text-violet-300 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200"
                 >
-                    Add Subcategory
+                    {editingCategory ? "Update Subcategory" : "Add Subcategory"}
                 </button>
             </form>
         </div>
