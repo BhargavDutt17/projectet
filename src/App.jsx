@@ -23,6 +23,8 @@ import { AddTransactionType} from "./components/Transactions/AddTransactionType"
 import { AdminTransactionTypeList } from "./components/Transactions/AdminTransactionTypeList";
 import { AdminCategoriesList } from "./components/Category/AdminCategoriesList";
 import { UserReport } from "./components/Admin/UserReport";
+import ForgetPassword from "./components/Users/ForgetPassword";
+import ResetPassword from "./components/Users/ResetPassword";
 
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
@@ -55,6 +57,8 @@ function App() {
         <Route path="/login" element={<Login setRole={setRole} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/activate" element={<Activate />} />
+        <Route path="/forgotpassword" element={<ForgetPassword/>}/>
+        <Route path="/resetpassword/:token"  element={<ResetPassword/>}/>
 
         {/* User Routes */}
         <Route element={<PrivateRoutes requiredRole="user" />}>

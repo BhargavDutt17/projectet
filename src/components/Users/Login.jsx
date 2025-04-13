@@ -116,7 +116,7 @@ export const Login = ({ setRole }) => {
 
         {/* Links for Forgot Password and Register */}
         <div className="flex justify-between text-sm text-white">
-          <Link to="/forgot-password" className="text-violet-300 hover:underline">Forgot Password?</Link>
+          <Link to="/forgotpassword" className="text-violet-300 hover:underline">Forgot Password?</Link>
           <Link to="/activate" className="text-violet-300 hover:underline">Reactivate your account</Link>
         </div>
       </form>
