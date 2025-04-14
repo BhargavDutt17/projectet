@@ -1,15 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { FaUser, FaEnvelope, FaEdit, FaLock, FaCamera, FaTrash, FaBan } from "react-icons/fa";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import axios from "axios";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
+
 
 export const Profile = () => {
 
   const [isUsernameEditing, setIsUsernameEditing] = useState(false);
   const [isEmailEditing, setIsEmailEditing] = useState(false);
   const [isPasswordEditing, setIsPasswordEditing] = useState(false);
-
+  const [loading, setLoading] = useState(false); // Add loading state
+  
+  const toastShownRef = useRef(false);
   const {
     register: registerUserInfo,
     handleSubmit: handleSubmitUserInfo,
@@ -36,93 +41,131 @@ export const Profile = () => {
 
   // Fetch user profile data
   useEffect(() => {
+    setLoading(true);
     if (user_id) {
       axios.get(`/user/profile/${user_id}`)
         .then((res) => {
-          console.log("Profile Data:", res.data); // Log the response
           if (res.data) {
             setUser({
-              username: res.data.username || "User  ",
+              username: res.data.username || "User",
               email: res.data.email || "email@example.com",
-              profile_image: res.data.profile_image || null
+              profile_image: res.data.profile_image || null,
             });
-            // Set form values using setValue
             setValue("username", res.data.username || "");
             setValue("email", res.data.email || "");
           }
         })
-        .catch((err) => console.error("Error fetching profile data:", err));
+        .catch((err) => {
+          console.error("Error fetching profile data:", err);
+          const errorMessage =
+            err.response?.data?.message || "Error fetching profile data. Please try again.";
+  
+          // Prevent duplicate toast
+          if (!toastShownRef.current) {
+            showToast(errorMessage, "error");
+            toastShownRef.current = true;
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }, [user_id, setValue]);
 
   const updateUsernameAndEmail = async (data) => {
+    setLoading(true); // Start loading when form submission begins
     const userId = user_id; // Use the user ID from local storage
-
-    // Update username if it has changed
-    if (data.username !== userData.username) {
-      await axios.put(`/update-username/${userId}`, { new_username: data.username });
-      console.log("Updated Username:", data.username);
-    }
-
-    // Update email if it has changed
-    if (data.email !== userData.email) {
-      await axios.put(`/update-email/${userId}`, { new_email: data.email });
-      console.log("Updated Email:", data.email);
+  
+    try {
+      // Update username if it has changed
+      if (data.username !== userData.username) {
+        await axios.put(`/update-username/${userId}`, { new_username: data.username });
+        console.log("Updated Username:", data.username);
+        showToast("Username updated successfully.", "success"); // Success toast for username update
+      }
+  
+      // Update email if it has changed
+      if (data.email !== userData.email) {
+        await axios.put(`/update-email/${userId}`, { new_email: data.email });
+        console.log("Updated Email:", data.email);
+        showToast("Email updated successfully.", "success"); // Success toast for email update
+      }
+    } catch (error) {
+      console.error("Error updating user data:", error);
+      showToast("Error updating user data. Please try again.", "error"); // Error toast in case of failure
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
+  
 
   const updatePassword = async (data) => {
+    setLoading(true); // Start loading when form submission begins
     const userId = user_id; // Use the user ID from local storage
-    await axios.put(`/change-password/${userId}`, {
-      current_password: data.currentPassword,
-      new_password: data.newPassword,
-      confirm_password: data.confirmPassword,
-    });
-    console.log("Updated Password");
+    
+    try {
+      // Attempt to update the password
+      await axios.put(`/change-password/${userId}`, {
+        current_password: data.currentPassword,
+        new_password: data.newPassword,
+        confirm_password: data.confirmPassword,
+      });
+      
+      console.log("Updated Password");
+      showToast("Password updated successfully.", "success"); // Success toast
+    } catch (error) {
+      console.error("Error updating password:", error);
+      showToast("Error updating password. Please try again.", "error"); // Error toast
+    }finally {
+      setLoading(false); // Stop loading when the request completes
+    }
   };
+  
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
+     setLoading(true); // Start loading when form submission begins
     if (file) {
       setSelectedImage(file);
       console.log("Image selected:", file);
-
+  
       // Call image upload function automatically
       handleImageUpload(file);
     } else {
       console.error("No image selected!");
+      showToast("Please select an image!", "error"); // ← ✅ toast added here
     }
   };
+  
 
   const handleImageUpload = async (file) => {
+    setLoading(true); // Start loading when form submission begins
     if (!file) {
       console.error("No image selected!");
-      alert("Please select an image first!");
+      showToast("Please select an image first!", "error"); // ← toast here
       return;
     }
-
+  
     const userId = user_id;
     const formData = new FormData();
-    formData.append("image", file); // Make sure the backend expects "image"
-
+    formData.append("image", file);
+  
     try {
       const response = await axios.put(`/update-profile-picture/${userId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      console.log("Profile picture updated:", response.data);
-      alert("Profile picture updated successfully!");
-
-      // Update UI with the new image
+  
       setUser((prev) => ({ ...prev, profile_image: response.data.profile_image }));
+      showToast("Profile picture updated successfully!", "success"); // ← success toast
     } catch (error) {
       console.error("Error updating profile picture:", error);
+      showToast("Failed to upload profile picture.", "error"); // ← error toast
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
-
-  const handleDeleteAccount = async () => {
+  
+  const handleDeleteAccount = async () => { setLoading(true); // Start loading when form submission begins
     const userId = localStorage.getItem("id");
     const role = localStorage.getItem("role"); // Needed for admin bypass logic
     const password = prompt("Please confirm your password to delete your account:");
@@ -143,16 +186,18 @@ export const Profile = () => {
     } catch (error) {
       console.error("Delete Error:", error);
       alert(error?.response?.data?.message || "Failed to delete account.");
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
-  const handleDeactivateAccount = async () => {
+  const handleDeactivateAccount = async () => { setLoading(true); // Start loading when form submission begins
     const userId = localStorage.getItem("id");
     const role = localStorage.getItem("role"); // For backend logic if needed
     const password = prompt("Please confirm your password to deactivate your account:");
 
     if (!password) {
-      alert("Password is required to deactivate account.");
+      showToast("Password is required to deactivate account.");
       return;
     }
 
@@ -162,23 +207,27 @@ export const Profile = () => {
         role,
       });
 
-      alert(res.data.message || "Account deactivated successfully.");
+      showToast(res.data.message || "Account deactivated successfully.");
       localStorage.clear();
       window.location.href = "/"; // Redirect to login
     } catch (error) {
       console.error("Deactivate Error:", error);
-      alert(error?.response?.data?.message || "Failed to deactivate account.");
+      showToast(error?.response?.data?.message || "Failed to deactivate account.");
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
-  const handleDeleteProfileImage = async () => {
+  const handleDeleteProfileImage = async () => { setLoading(true); // Start loading when form submission begins
     try {
       const res = await axios.delete(`/users/delete-profile-image/${user_id}`);
-      alert("Profile picture deleted successfully.");
+      showToast("Profile picture deleted successfully.");
       setUser((prev) => ({ ...prev, profile_image: null }));
     } catch (error) {
       console.error("Error deleting profile picture:", error);
-      alert("Failed to delete profile picture.");
+      showToast("Failed to delete profile picture.");
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -186,7 +235,9 @@ export const Profile = () => {
   return (
     <>
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 p-6">
+      {loading && <CustomLoader />}
         <div className="max-w-8xl w-full flex bg-white dark:bg-gray-900 rounded-xl p-6">
+
           {/* Profile Picture Section (Left Side) */}
           <div className="flex flex-col items-center w-1/3 border-r border-violet-500 pr-6">
             <div className="relative">

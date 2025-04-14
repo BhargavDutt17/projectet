@@ -25,3 +25,7 @@ update and delete button is working in transaction and category list and redirec
 
 08-04-2025
 delete and deactivate account is working in user profile
+
+14-04-2025
+project is complete some minor things are left but other then that everything is complete use 
+https://app.mailslurp.com/emails   or yopmail if you want to open link of reset password.

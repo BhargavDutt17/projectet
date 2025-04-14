@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes, useLocation, Navigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer } from "react-toastify";
 import { useState, useEffect } from "react";
 import { Login } from "./components/Users/Login";
 import { Register } from "./components/Users/Register";
@@ -25,6 +26,7 @@ import { AdminCategoriesList } from "./components/Category/AdminCategoriesList";
 import { UserReport } from "./components/Admin/UserReport";
 import ForgetPassword from "./components/Users/ForgetPassword";
 import ResetPassword from "./components/Users/ResetPassword";
+import ToastWrapper from "./components/Custom/ToastWrapper";
 
 // Set backend API base URL globally
 axios.defaults.baseURL = "http://127.0.0.1:8000";
@@ -51,6 +53,11 @@ function App() {
   return (
     <BrowserRouter>
       <NavbarHandler role={role} setRole={setRole} />
+
+      
+      {/* Global Toastify container */}
+
+      <ToastWrapper/>
 
       <Routes>
         <Route path="/" element={<HomePage />} />

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { FaUser, FaLock } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import axios from "axios"; // Import axios for API calls
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const Login = ({ setRole }) => {
   const {
@@ -11,8 +13,10 @@ export const Login = ({ setRole }) => {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate(); // Initialize useNavigate
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const onSubmit = async (data) => {
+    setLoading(true); // Start loading when form submission begins
     const formattedData = {
       email_or_username: data.email_or_username.trim(),
       password: data.password,
@@ -24,6 +28,7 @@ export const Login = ({ setRole }) => {
       });
 
       if (res.status === 200) {
+        showToast("Login successful!", "success");
         localStorage.setItem("id", res.data.user._id);
         localStorage.setItem("role", res.data.user.role.name);
         localStorage.setItem("role_id", res.data.user.role._id);
@@ -37,9 +42,16 @@ export const Login = ({ setRole }) => {
         }
       }
     }
+    // Inside your catch block
     catch (error) {
       console.error("Login error:", error.response?.data || error.message);
-      alert("Error logging in. Please check your credentials.");
+      showToast(
+        error.response?.data?.message || "Login failed. Please check your credentials.",
+        "error"
+      );
+
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -68,6 +80,7 @@ export const Login = ({ setRole }) => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 pt-1 transition-colors duration-300">
+      {loading && <CustomLoader />}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500"

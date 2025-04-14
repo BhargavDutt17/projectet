@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useTransition } from "react";
 import axios from "axios";
 import { FaTrash, FaTrashAlt } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
-import { ToastContainer, toast } from "react-toastify"; // Import toastify
-import "react-toastify/dist/ReactToastify.css"; // Import styles for Toastify
+import { showToast } from '../Custom/ToastUtil';
 
 export const TransactionReport = () => {
   const [reports, setReports] = useState([]);
@@ -75,16 +74,10 @@ export const TransactionReport = () => {
         setReports((prevReports) => prevReports.filter((r) => r._id !== reportId));
       });
 
-      toast.success("Report deleted successfully", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Report deleted successfully", "success"); // Use global toast
     } catch (error) {
       console.error("Error deleting report:", error);
-      toast.error("Failed to delete report", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Failed to delete report", "error"); // Use global toast
     }
   }, []);
 
@@ -99,16 +92,11 @@ export const TransactionReport = () => {
         setReports([]);
       });
 
-      toast.success("All reports deleted successfully", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+         showToast("All reports deleted successfully", "success"); // Use global toast
     } catch (error) {
       console.error("Error deleting all reports:", error);
-      toast.error("Failed to delete all reports", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Failed to delete all reports", "error"); // Use global toast
+    
     }
   };
 
@@ -214,7 +202,6 @@ export const TransactionReport = () => {
           </ul>
         </div>
       </div>
-      <ToastContainer /> {/* Add the ToastContainer for notifications */}
     </div>
   );
 };

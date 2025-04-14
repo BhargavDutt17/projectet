@@ -4,11 +4,14 @@ import { FaUser, FaEnvelope, FaLock, FaKey} from "react-icons/fa";
 import { IoPersonCircleOutline} from "react-icons/io5"; 
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const Register = () => {
   const { register, handleSubmit, formState: { errors }, getValues } = useForm();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState(null);
+  const [loading, setLoading] = useState(false); // Add loading state
 
   // Handle Profile Image Change
   const handleImageChange = (event) => {
@@ -17,6 +20,7 @@ export const Register = () => {
   };
 
   const onSubmit = async (data) => {
+    setLoading(true); // Start loading when form submission begins
     const formData = new FormData();
     formData.append("firstName", data.firstName.trim());
     formData.append("lastName", data.lastName.trim());
@@ -37,14 +41,16 @@ export const Register = () => {
       });
 
       if (response.data.message) {
-        alert("Registration successful!");
+        showToast("Registration successful!","success");
         navigate("/login"); // Redirect to login
       } else {
-        alert("Registration failed.");
+        showToast("Registration failed.","error");
       }
     } catch (error) {
       console.error("Registration error:", error.response?.data || error.message);
-      alert("Error registering. Please check console for details.");
+      showToast( error.response?.data?.message ||"Error registering. Please check console for details.","error");
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -80,6 +86,8 @@ export const Register = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
+       {/* Show loader if registration is in progress */}
+       {loading && <CustomLoader />}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl border border-violet-500 space-y-6"

@@ -2,11 +2,15 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { FaUser } from 'react-icons/fa';
 import axios from 'axios';
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 const ForgetPassword = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
+    const [loading, setLoading] = useState(false); // Add loading state
 
     const onSubmit = async ({ email }) => {
+        setLoading(true); // Start loading when form submission begins
         try {
             const formData = new FormData();
             formData.append("email", email);
@@ -15,12 +19,18 @@ const ForgetPassword = () => {
 
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);
-            alert("Email not found or server error.");
-        }
+           showToast(
+                   error.response?.data?.message || "Email not found or server error.",
+                   "error"
+                 );
+        }finally {
+            setLoading(false); // Stop loading when the request completes
+          }
     };
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 pt-1 transition-colors duration-300">
+             {loading && <CustomLoader />}
             <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500">
                 <h2 className="text-3xl font-semibold text-center text-violet-500">Forgot Password</h2>
                 <p className="text-sm text-center text-violet-500 font-medium">Enter your email to get reset link</p>

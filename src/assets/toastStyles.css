@@ -1,0 +1,84 @@
+/* assets/toastStyles.css */
+
+/* Base Toast Style */
+.toast-success,
+.toast-error,
+.toast-info {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-left-width: 6px;
+  border-style: solid;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .toast-success,
+  .toast-error,
+  .toast-info {
+    background-color: #0f0f0f !important;
+    color: #f4f4f5 !important;
+  }
+}
+
+/* Light mode fallback */
+@media (prefers-color-scheme: light) {
+  .toast-success,
+  .toast-error,
+  .toast-info {
+    background-color: #ffffff !important;
+    color: #1a1a1a !important;
+  }
+}
+
+/* Type-specific styles */
+.toast-success {
+  border-color: #8b5cf6; /* violet-500 */
+}
+
+.toast-error {
+  border-color: #ef4444; /* red-500 */
+}
+
+.toast-info {
+  border-color: #6366f1; /* indigo-500 */
+}
+
+/* Close Button Styling */
+.toast-success .toast-close-button,
+.toast-error .toast-close-button,
+.toast-info .toast-close-button {
+  font-size: 1.5rem; /* Make the close button bigger */
+  font-weight: bold;
+  color: #f4f4f5; /* White color for dark mode */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+/* Close button for light mode */
+@media (prefers-color-scheme: light) {
+  .toast-success .toast-close-button,
+  .toast-error .toast-close-button,
+  .toast-info .toast-close-button {
+    color: #1a1a1a; /* Dark color for light mode */
+  }
+}
+
+/* Close button positioning */
+.toast-success .toast-close-button,
+.toast-error .toast-close-button,
+.toast-info .toast-close-button {
+  margin-left: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

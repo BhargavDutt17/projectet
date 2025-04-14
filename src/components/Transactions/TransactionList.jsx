@@ -3,6 +3,8 @@ import { FaTrash, FaEdit } from "react-icons/fa";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const TransactionList = () => {
 
@@ -17,9 +19,11 @@ export const TransactionList = () => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [reportUrl, setReportUrl] = useState(null);
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const fetchTransactions = async () => {
     try {
+      setLoading(true); //
       const user_id = localStorage.getItem("id");
       if (!user_id) return console.error("User ID not found in localStorage");
 
@@ -27,20 +31,30 @@ export const TransactionList = () => {
       setTransactions(response.data);
     } catch (error) {
       console.error("Error fetching user transactions:", error);
+      showToast("Error fetching user transactions. Please try again.", "error");
+    }
+    finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
   const fetchCategories = async () => {
+    setLoading(true); //
     try {
       const response = await axios.get("/getAllCategories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+      showToast("Error fetching categories. Please try again.", "error");
+    }
+    finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
   const fetchSubCategories = async (categoryId) => {
     if (!categoryId) return;
+    setLoading(true); //
 
     try {
       const user_id = localStorage.getItem("id") || "";
@@ -53,11 +67,15 @@ export const TransactionList = () => {
       setSubCategories(response.data);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
+      showToast("Error fetching subcategories. Please try again.", "error");
+    } finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
 
   const fetchLatestReport = async () => {
+    setLoading(true); //
     try {
       const user_id = localStorage.getItem("id");
       if (!user_id) return;
@@ -71,7 +89,10 @@ export const TransactionList = () => {
       }
     } catch (error) {
       console.error("Error fetching latest report:", error);
+      showToast("Error fetching latest report. Please try again.", "error");
       setReportUrl(null);
+    } finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -116,40 +137,44 @@ export const TransactionList = () => {
   };
 
   const generateReport = async () => {
+    setLoading(true); //
     try {
       const user_id = localStorage.getItem("id");
       if (!user_id) return alert("User ID not found. Please log in.");
-  
+
       const startDate = filters.startDate
         ? filters.startDate.split("-").reverse().join("/")
         : "";
       const endDate = filters.endDate
         ? filters.endDate.split("-").reverse().join("/")
         : "";
-  
+
       const params = new URLSearchParams({
         user_id,
         start_date: startDate,
         end_date: endDate,
       });
-  
+
       if (filters.type) params.append("category_id", filters.type);
       if (filters.category) params.append("subcategory_id", filters.category);
-  
+
       const response = await axios.post(`/generateTransactionReport?${params.toString()}`);
-  
+
       if (response.data.report_file_url) {
-        alert("Report generated successfully!");
+        showToast("Report generated successfully!");
         setReportUrl(response.data.report_file_url);
       } else {
-        alert("Failed to generate report.");
+        showToast("Failed to generate report.");
       }
     } catch (error) {
       console.error("Error generating report:", error);
-      alert("Error generating report. Please try again.");
+      showToast("Error generating report. Please try again.");
+    }
+    finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
-  
+
 
   const navigate = useNavigate();
 
@@ -158,6 +183,7 @@ export const TransactionList = () => {
   };
 
   const handleDeleteTransaction = async (transactionId) => {
+    setLoading(true); //
     try {
       const user_id = localStorage.getItem("id"); // Get user ID from local storage
       if (!user_id) return alert("User ID not found. Please log in.");
@@ -167,14 +193,17 @@ export const TransactionList = () => {
       });
 
       if (response.status === 200) {
-        alert("Transaction deleted successfully!");
+        showToast("Transaction deleted successfully!");
         fetchTransactions(); // Refresh the transaction list
       } else {
-        alert("Failed to delete transaction.");
+        showToast("Failed to delete transaction.");
       }
     } catch (error) {
       console.error("Error deleting transaction:", error);
-      alert("Error deleting transaction. Please try again.");
+      showToast("Error deleting transaction. Please try again.");
+    }
+    finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -263,7 +292,10 @@ export const TransactionList = () => {
           <button
             onClick={() => {
               if (reportUrl) {
-                window.open(reportUrl, "_blank"); // Open report in a new tab
+                const link = document.createElement('a');
+                link.href = reportUrl;
+                link.download = 'Transaction_Report'; // Optional: You can specify the filename here
+                link.click(); // Trigger the download
               } else {
                 alert("No report available. Please generate one first.");
               }
@@ -277,6 +309,7 @@ export const TransactionList = () => {
           </button>
         </div>
 
+
       </div>
 
       {/* Transaction List */}
@@ -285,6 +318,7 @@ export const TransactionList = () => {
           <h3 className="text-xl font-semibold mb-4 text-violet-500">
             Filtered Transactions
           </h3>
+          {loading && <CustomLoader />}
           <ul className="list-disc pl-5 space-y-2 ">
             {filteredTransactions.map((transaction) => (
               <li

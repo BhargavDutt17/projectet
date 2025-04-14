@@ -1,60 +1,90 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { showToast } from "../Custom/ToastUtil";
+import CustomLoader from "../Custom/CustomLoader";
 
 export const AdList = () => {
     const [ads, setAds] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const userId = localStorage.getItem("id");
 
+    // Use useRef to track whether a toast has been shown
+    const toastShownRef = useRef(false);
+
     useEffect(() => {
         if (!userId) {
-            setError("User ID not found in local storage");
+            if (!toastShownRef.current) {
+                showToast("User ID not found in local storage", "error");
+                toastShownRef.current = true; // Set toastShownRef to true after showing the toast
+            }
             setLoading(false);
             return;
         }
 
         const fetchAds = async () => {
+            setLoading(true);
             try {
                 const incomeResponse = await axios.get(`/ads/income/${userId}`);
                 const expenseResponse = await axios.get(`/ads/expense/${userId}`);
 
-                if (incomeResponse.status !== 200 || expenseResponse.status !== 200) {
-                    throw new Error("Failed to fetch ads");
-                }
+                const combinedAds = [
+                    ...(incomeResponse.data || []),
+                    ...(expenseResponse.data || [])
+                ];
 
-                setAds([...incomeResponse.data, ...expenseResponse.data]);
+                if (combinedAds.length === 0) {
+                    if (!toastShownRef.current) {
+                        showToast("No financial tips available because there are no transactions.", "info");
+                        toastShownRef.current = true; // Set toastShownRef to true after showing the toast
+                    }
+                } else {
+                    setAds(combinedAds);
+                }
             } catch (err) {
                 console.error("Error fetching ads:", err);
-                setError("Failed to load ads. Check console for details.");
+
+                const errorMessage =
+                    err.response?.data?.message ||
+                    "Failed to load financial tips";
+
+                // Only show the toast if one hasn't been shown yet
+                if (!toastShownRef.current) {
+                    showToast(errorMessage, "error");
+                    toastShownRef.current = true; // Set toastShownRef to true after showing the toast
+                }
             } finally {
                 setLoading(false);
             }
         };
 
         fetchAds();
-    }, [userId]);
-
-    if (loading) return <p className="text-center text-lg">Loading ads...</p>;
-    if (error) return <p className="text-center text-red-500">{error}</p>;
+    }, [userId]); // Ensure this effect only depends on userId
 
     return (
         <div className="w-full p-4 bg-white dark:bg-gray-950 rounded-lg shadow-lg">
-            {/* Dropdown Button */}
+            {loading && <CustomLoader />}
+
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center justify-between w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-800 hover:to-purple-900 
-          text-violet-200 font-bold p-3 rounded-lg shadow-md"
+                text-violet-200 font-bold p-3 rounded-lg shadow-md"
             >
-                <span className="text-lg font-semibold">Finacial Tips</span>
+                <span className="text-lg font-semibold">Financial Tips</span>
                 {isOpen ? <FaChevronUp /> : <FaChevronDown />}
             </button>
 
-            {/* Ad List */}
             {isOpen && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 w-full">
+                   {!ads.length && !loading && (
+    <div className="flex justify-center items-center w-full col-span-2 h-60"> 
+        {/* col-span-2: spans the full width across both grid columns */}
+        <p className="text-center text-gray-500 mb-4">No financial tips available at the moment.</p>
+    </div>
+)}
+
+
                     {ads.map((ad, index) => (
                         <a
                             key={index}
