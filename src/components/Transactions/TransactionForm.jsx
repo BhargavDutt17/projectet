@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { FaRupeeSign, FaCalendarAlt, FaRegCommentDots, FaWallet } from "react-icons/fa";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const TransactionForm = () => {
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm();
@@ -10,6 +12,7 @@ export const TransactionForm = () => {
   const [subCategories, setSubCategories] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const transaction = location.state?.transaction || null;
 
@@ -19,16 +22,22 @@ export const TransactionForm = () => {
 
   // Fetch categories (Income/Expense)
   const fetchCategories = async () => {
+    setLoading(true); // Start loading when form submission begins
     try {
       const response = await axios.get("/getAllCategories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+      showToast("Error fetching categories","error")
+    }
+    finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
   // Fetch subcategories based on selected category
   const fetchSubCategories = async (categoryId) => {
+    setLoading(true); // Start loading when form submission begins
     if (!categoryId) return;
     try {
       let url = `/getSubCategoryByCategoryId/${categoryId}`;
@@ -38,6 +47,9 @@ export const TransactionForm = () => {
       setSubCategories(response.data || []);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
+      showToast("Error fetching subcategories","error")
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -65,6 +77,7 @@ export const TransactionForm = () => {
 
   // Handle form submission
   const onSubmit = async (data) => {
+    setLoading(true); // Start loading when form submission begins
     try {
       const transactionData = {
         user_id,
@@ -79,17 +92,19 @@ export const TransactionForm = () => {
       let response;
       if (transaction && transaction._id) {
         response = await axios.put(`/editTransaction/${transaction._id}`, transactionData);
-        alert(response.data.message);
+        showToast(response.data.message);
         navigate("/user/trasactionlists"); // Redirect only on update
       } else {
         response = await axios.post("/addTransaction", transactionData);
-        alert(response.data.message);
+        showToast(response.data.message);
         // Stay on the same page after adding a transaction
       }
 
     } catch (error) {
       console.error("Error submitting transaction:", error.response?.data || error.message);
-      alert(`Failed to save transaction: ${error.response?.data?.message || "Unknown error"}`);
+      showToast(`Failed to save transaction: ${error.response?.data?.message || "Unknown error"}`);
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -106,6 +121,7 @@ export const TransactionForm = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 pt-6 transition-colors duration-300">
+      {loading&&<CustomLoader/>}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-lg mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-3 border border-violet-500"

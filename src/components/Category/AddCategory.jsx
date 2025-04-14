@@ -5,12 +5,16 @@ import { FaWallet } from "react-icons/fa";
 import { SiDatabricks } from "react-icons/si";
 import { MdDescription } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const AddCategory = () => {
     const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm();
     const [categories, setCategories] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false); // Add loading state
+    
     
     const user_id = localStorage.getItem("id") || "";
     const role_id = localStorage.getItem("role_id") || "";
@@ -20,13 +24,18 @@ export const AddCategory = () => {
     const editingCategory = location.state?.category || null;
 
     useEffect(() => {
+        setLoading(true); // Start loading when form submission begins
         const fetchCategories = async () => {
             try {
                 const response = await axios.get("/getAllCategories");
                 setCategories(response.data);
             } catch (error) {
                 console.error("Error fetching categories:", error);
+                showToast("Error fetching categories","error")
             }
+            finally {
+                setLoading(false); // Stop loading when the request completes
+              }
         };
 
         fetchCategories();
@@ -39,6 +48,7 @@ export const AddCategory = () => {
     }, [editingCategory, setValue]);
 
     const onSubmit = async (data) => {
+        setLoading(true); // Start loading when form submission begins
         try {
             const categoryData = {
                 name: data.name,
@@ -55,24 +65,27 @@ export const AddCategory = () => {
             if (editingCategory) {
                 response = await axios.put(`/editSubcategory/${editingCategory._id}`, categoryData);
                 if (response.status === 200) {
-                    alert(response.data.message);
+                    showToast(response.data.message);
                     navigate("/user/categorieslist"); // Redirect after update
                 }
             } else {
                 response = await axios.post("/addSubCategory", categoryData);
                 if (response.status === 201) {
-                    alert(response.data.message);
+                    showToast(response.data.message);
                     reset(); // Clear form fields after adding a new category
                 }
             }
         } catch (error) {
             console.error("Error saving category:", error.response?.data || error.message);
-            alert("Failed to save category");
-        }
+            showToast( error.response?.data?.message || "Failed to save category","error");
+        }finally {
+            setLoading(false); // Stop loading when the request completes
+          }
     };
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 pt-6 transition-colors duration-300">
+            {loading&&<CustomLoader/>}
             <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="max-w-lg mx-auto bg-white dark:bg-slate-700 p-6 rounded-lg shadow-lg space-y-6 border border-violet-500"

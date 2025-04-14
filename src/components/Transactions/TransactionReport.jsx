@@ -3,6 +3,7 @@ import axios from "axios";
 import { FaTrash, FaTrashAlt } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const TransactionReport = () => {
   const [reports, setReports] = useState([]);
@@ -12,9 +13,12 @@ export const TransactionReport = () => {
     generatedDate: "",
   });
   const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false); // Add loading state
+  const [selectedReports, setSelectedReports] = useState([]);
 
   // Fetch transaction reports from backend
   useEffect(() => {
+    setLoading(true); // Start loading when form submission begins
     const fetchReports = async () => {
       const user_id = localStorage.getItem("id");
       if (!user_id) return;
@@ -25,6 +29,10 @@ export const TransactionReport = () => {
         console.log("Fetching reports for user:", user_id);
       } catch (error) {
         console.error("Error fetching transaction reports:", error);
+        showToast("Error fetching transaction reports", "error")
+
+      } finally {
+        setLoading(false); // Stop loading when the request completes
       }
     };
 
@@ -58,13 +66,40 @@ export const TransactionReport = () => {
 
     const startDateCheck = !filterStartDate || (reportStartDate && reportStartDate >= filterStartDate);
     const endDateCheck = !filterEndDate || (reportEndDate && reportEndDate <= filterEndDate);
-    const generatedDateCheck = !filterGeneratedDate || 
+    const generatedDateCheck = !filterGeneratedDate ||
       (reportGeneratedDate && reportGeneratedDate.toDateString() === filterGeneratedDate.toDateString());
-    const generatedInRange = (!filterStartDate || !filterEndDate) || 
+    const generatedInRange = (!filterStartDate || !filterEndDate) ||
       (reportGeneratedDate >= filterStartDate && reportGeneratedDate <= filterEndDate);
 
     return startDateCheck && endDateCheck && generatedDateCheck && generatedInRange;
   });
+
+  const toggleReportSelection = (reportId) => {
+    setSelectedReports((prev) =>
+      prev.includes(reportId) ? prev.filter((id) => id !== reportId) : [...prev, reportId]
+    );
+  };
+
+  const handleDeleteSelectedReports = async () => {
+    if (selectedReports.length === 0) return;
+    setLoading(true);
+    try {
+      await axios.post("/transaction-reports/delete-selected", {
+        report_id: selectedReports,
+      });
+
+      startTransition(() => {
+        setReports((prev) => prev.filter((r) => !selectedReports.includes(r._id)));
+        setSelectedReports([]);
+      });
+      showToast("Selected reports deleted successfully", "success");
+    } catch (error) {
+      console.error("Error deleting selected reports:", error);
+      showToast("Failed to delete selected reports", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteReport = useCallback(async (reportId) => {
     try {
@@ -82,6 +117,7 @@ export const TransactionReport = () => {
   }, []);
 
   const handleDeleteAllReports = async () => {
+    setLoading(true); // Start loading when form submission begins
     const user_id = localStorage.getItem("id");
     if (!user_id) return;
 
@@ -92,16 +128,19 @@ export const TransactionReport = () => {
         setReports([]);
       });
 
-         showToast("All reports deleted successfully", "success"); // Use global toast
+      showToast("All reports deleted successfully", "success"); // Use global toast
     } catch (error) {
       console.error("Error deleting all reports:", error);
       showToast("Failed to delete all reports", "error"); // Use global toast
-    
+
+    } finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
+      {loading && <CustomLoader />}
       <div className="mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="col-span-1">
           <label className="block text-violet-500 text-center">Start Date</label>
@@ -145,15 +184,25 @@ export const TransactionReport = () => {
               Transaction Reports
             </h3>
             {/* Move the Delete All button to the far right of the header */}
-            <button
-              onClick={handleDeleteAllReports}
-              className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 
-              hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm ocus:outline-none focus:ring-2 focus:ring-offset-2 
-              focus:ring-red-600 px-3 py-1 rounded-lg shadow"
-            >
-              <FaTrashAlt />
-              Delete All
-            </button>
+            {selectedReports.length > 0 ? (
+              <button
+                onClick={handleDeleteSelectedReports}
+                className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 
+                flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+              >
+                <FaTrashAlt />
+                Delete Selected
+              </button>
+            ) : (
+              <button
+                onClick={handleDeleteAllReports}
+                className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 
+                flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+              >
+                <FaTrashAlt />
+                Delete All
+              </button>
+            )}
           </div>
           <ul className="list-disc pl-5 space-y-2">
             {filteredReports.map((report) => (
@@ -185,12 +234,21 @@ export const TransactionReport = () => {
                   ) : (
                     <span className="text-gray-400">No File</span>
                   )}
+
                   <button
                     onClick={() => handleDeleteReport(report._id)}
                     className="text-red-500 hover:text-red-700"
                   >
                     <FaTrash />
                   </button>
+
+                  <input
+                    type="checkbox"
+                    checked={selectedReports.includes(report._id)}
+                    onChange={() => toggleReportSelection(report._id)}
+                    className="mr-3 accent-violet-600 w-4 h-4"
+                  />
+
                 </div>
               </li>
             ))}

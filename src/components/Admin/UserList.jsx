@@ -7,6 +7,8 @@ import { IoPersonCircleOutline } from "react-icons/io5";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Toggle from "../Custom/Toggle";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const UserList = () => {
     const [users, setUsers] = useState([]);
@@ -18,16 +20,21 @@ export const UserList = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const navigate = useNavigate();
     const [showFullImage, setShowFullImage] = useState(false);
+    const [loading, setLoading] = useState(false); // Add loading state
 
     const isAdmin = localStorage.getItem("role") === "admin";
 
     const fetchUsers = async () => {
+        setLoading(true); // Start loading when form submission begins
         try {
             const res = await axios.get("/users/");
             setUsers(res.data);
         } catch (error) {
             console.error("Error fetching users:", error);
-        }
+            showToast("Error fetching users","error")
+        }finally {
+            setLoading(false); // Stop loading when the request completes
+          }
     };
 
     const fetchRoles = async () => {
@@ -52,20 +59,24 @@ export const UserList = () => {
 
 
     const handleDeactivate = async (user_Id) => {
-        try {
+        try { setLoading(true); // Start loading when form submission begins
             await axios.put(`/user/deactivate/${user_Id}`, {
                 role: "admin",
                 password: "",
             });
-            alert("Deactivation scheduled");
+            showToast("Deactivation scheduled");
             fetchUsers();
         } catch (error) {
             console.error("Error deactivating user:", error);
-        }
+            showToast("Error deactivating user","error")
+        }finally {
+            setLoading(false); // Stop loading when the request completes
+          }
     };
 
     const handleActivate = async (user_Id, email_or_username) => {
         try {
+            setLoading(true); // Start loading when form submission begins
             const res = await axios.post("/users/activate", {
                 email_or_username,
                 password: "",
@@ -73,36 +84,43 @@ export const UserList = () => {
             });
 
             if (res.data.status) {
-                alert("Account activated");
+                showToast("Account activated");
                 fetchUsers();
             } else {
-                alert(res.data.message);
+                showToast(res.data.message);
             }
         } catch (err) {
-            alert("Failed to activate user");
+            showToast("Failed to activate user");
             console.error(err);
-        }
+        }finally {
+            setLoading(false); // Stop loading when the request completes
+          }
     };
 
     const handleDelete = async (user_Id) => {
+        setLoading(true); // Start loading when form submission begins
         try {
             await axios.delete(`/user/delete/${user_Id}`, {
                 data: { role: "admin", password: "" },
             });
-            alert("Deletion scheduled");
+            showToast("Deletion scheduled");
             fetchUsers();
         } catch (error) {
             console.error("Error deleting user:", error);
-        }
+            showToast("Error deleting user","error")
+        }finally {
+            setLoading(false); // Stop loading when the request completes
+          }
     };
 
     const handleCancelDelete = async (userId) => {
-        try {
+        try { setLoading(true); // Start loading when form submission begins
             await axios.put(`/user/cancel-delete/${userId}`);
-            alert("Deletion cancelled");
+            showToast("Deletion cancelled");
             fetchUsers();
         } catch (error) {
             console.error("Error canceling deletion:", error);
+            showToast("Error canceling deletion","error")
         }
     };
 
@@ -150,6 +168,7 @@ export const UserList = () => {
 
     return (
         <div className="min-h-screen p-4 bg-white dark:bg-gray-950 text-violet-500 font-small">
+            {loading&&<CustomLoader/>}
             {/* Filters + Admin Buttons */}
             <div className="mx-auto grid grid-cols-1 md:grid-cols-6 gap-4 mb-6 items-end">
                 <div className="col-span-1 relative">
@@ -226,17 +245,20 @@ export const UserList = () => {
                         <label className="block text-transparent select-none">.</label>
                         <button
                             onClick={async () => {
+                                setLoading(true); // Start loading when form submission begins
                                 try {
                                     await axios.post("/user-reports/generate", {
                                         selectedRole,
                                         selectedStatus,
                                         searchTerm,
                                     });
-                                    alert("Excel report generated successfully");
+                                    showToast("Excel report generated successfully","success");
                                 } catch (err) {
                                     console.error("Generate error:", err);
-                                    alert("Failed to generate report");
-                                }
+                                    showToast("Failed to generate report");
+                                }finally {
+                                    setLoading(false); // Stop loading when the request completes
+                                  }
                             }}
                             className="w-full p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
                         >
@@ -250,15 +272,18 @@ export const UserList = () => {
                         <label className="block text-transparent select-none">.</label>
                         <button
                             onClick={async () => {
+                                setLoading(true); // Start loading when form submission begins
                                 try {
                                     const res = await axios.get("/user-reports/latest");
                                     const url = res.data?.report_file_url;
                                     if (url) window.open(url, "_blank");
-                                    else alert("No latest report found");
+                                    else showToast("No latest report found");
                                 } catch (err) {
                                     console.error("Download error:", err);
-                                    alert("Failed to download report");
-                                }
+                                    showToast("Failed to download report");
+                                }finally {
+                                    setLoading(false); // Stop loading when the request completes
+                                  }
                             }}
                             className="w-full p-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
                         >

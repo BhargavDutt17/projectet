@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaTrash, FaEdit } from "react-icons/fa";
+import { FaTrash, FaEdit, FaTrashAlt } from "react-icons/fa";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,6 @@ import { showToast } from '../Custom/ToastUtil';
 import CustomLoader from '../Custom/CustomLoader';
 
 export const TransactionList = () => {
-
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -16,83 +15,72 @@ export const TransactionList = () => {
   });
 
   const [transactions, setTransactions] = useState([]);
+  const [selectedTransactions, setSelectedTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [reportUrl, setReportUrl] = useState(null);
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
 
   const fetchTransactions = async () => {
     try {
-      setLoading(true); //
+      setLoading(true);
       const user_id = localStorage.getItem("id");
-      if (!user_id) return console.error("User ID not found in localStorage");
+      if (!user_id) return console.error("User ID not found");
 
       const response = await axios.get(`/getTransactionByUserId/${user_id}`);
       setTransactions(response.data);
     } catch (error) {
-      console.error("Error fetching user transactions:", error);
-      showToast("Error fetching user transactions. Please try again.", "error");
-    }
-    finally {
-      setLoading(false); // Stop loading when the request completes
+      console.error("Error fetching transactions:", error);
+      showToast("Error fetching user transactions", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchCategories = async () => {
-    setLoading(true); //
+    setLoading(true);
     try {
       const response = await axios.get("/getAllCategories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
-      showToast("Error fetching categories. Please try again.", "error");
-    }
-    finally {
-      setLoading(false); // Stop loading when the request completes
+      showToast("Error fetching categories", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchSubCategories = async (categoryId) => {
     if (!categoryId) return;
-    setLoading(true); //
-
+    setLoading(true);
     try {
       const user_id = localStorage.getItem("id") || "";
       const role_id = localStorage.getItem("role_id") || "";
-
       const response = await axios.get(`/getSubCategoryByCategoryId/${categoryId}`, {
         params: { user_id, role_id },
       });
-
       setSubCategories(response.data);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
-      showToast("Error fetching subcategories. Please try again.", "error");
+      showToast("Error fetching subcategories", "error");
     } finally {
-      setLoading(false); // Stop loading when the request completes
+      setLoading(false);
     }
   };
 
-
   const fetchLatestReport = async () => {
-    setLoading(true); //
+    setLoading(true);
     try {
       const user_id = localStorage.getItem("id");
       if (!user_id) return;
-
       const response = await axios.get(`/getLatestTransactionReport/${user_id}`);
-
-      if (response.data.report_file_url) {
-        setReportUrl(response.data.report_file_url);
-      } else {
-        setReportUrl(null);
-      }
+      setReportUrl(response.data.report_file_url || null);
     } catch (error) {
-      console.error("Error fetching latest report:", error);
-      showToast("Error fetching latest report. Please try again.", "error");
+      console.error("Error fetching report:", error);
+      showToast("Error fetching report", "error");
       setReportUrl(null);
     } finally {
-      setLoading(false); // Stop loading when the request completes
+      setLoading(false);
     }
   };
 
@@ -116,50 +104,36 @@ export const TransactionList = () => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const filteredTransactions = transactions.filter((transaction) => {
-    const transactionDate = new Date(transaction.date);
-    const isWithinDateRange =
-      (!filters.startDate || transactionDate >= new Date(filters.startDate)) &&
-      (!filters.endDate || transactionDate <= new Date(filters.endDate));
-    const isTypeMatch = !filters.type || transaction.category_id?._id === filters.type;
-    const isCategoryMatch =
-      !filters.category || transaction.subcategory_id?._id === filters.category;
-
-    return isWithinDateRange && isTypeMatch && isCategoryMatch;
-  });
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return `${String(date.getDate()).padStart(2, "0")}/${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}/${date.getFullYear()}`;
   };
 
+  const filteredTransactions = transactions.filter((transaction) => {
+    const transactionDate = new Date(transaction.date);
+    const inRange =
+      (!filters.startDate || transactionDate >= new Date(filters.startDate)) &&
+      (!filters.endDate || transactionDate <= new Date(filters.endDate));
+    const typeMatch = !filters.type || transaction.category_id?._id === filters.type;
+    const categoryMatch =
+      !filters.category || transaction.subcategory_id?._id === filters.category;
+    return inRange && typeMatch && categoryMatch;
+  });
+
   const generateReport = async () => {
-    setLoading(true); //
+    setLoading(true);
     try {
       const user_id = localStorage.getItem("id");
-      if (!user_id) return alert("User ID not found. Please log in.");
+      const startDate = filters.startDate ? filters.startDate.split("-").reverse().join("/") : "";
+      const endDate = filters.endDate ? filters.endDate.split("-").reverse().join("/") : "";
 
-      const startDate = filters.startDate
-        ? filters.startDate.split("-").reverse().join("/")
-        : "";
-      const endDate = filters.endDate
-        ? filters.endDate.split("-").reverse().join("/")
-        : "";
-
-      const params = new URLSearchParams({
-        user_id,
-        start_date: startDate,
-        end_date: endDate,
-      });
-
+      const params = new URLSearchParams({ user_id, start_date: startDate, end_date: endDate });
       if (filters.type) params.append("category_id", filters.type);
       if (filters.category) params.append("subcategory_id", filters.category);
 
       const response = await axios.post(`/generateTransactionReport?${params.toString()}`);
-
       if (response.data.report_file_url) {
         showToast("Report generated successfully!");
         setReportUrl(response.data.report_file_url);
@@ -168,13 +142,11 @@ export const TransactionList = () => {
       }
     } catch (error) {
       console.error("Error generating report:", error);
-      showToast("Error generating report. Please try again.");
-    }
-    finally {
-      setLoading(false); // Stop loading when the request completes
+      showToast("Error generating report", "error");
+    } finally {
+      setLoading(false);
     }
   };
-
 
   const navigate = useNavigate();
 
@@ -207,6 +179,49 @@ export const TransactionList = () => {
     }
   };
 
+  const toggleTransactionSelection = (id) => {
+    setSelectedTransactions((prev) =>
+      prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id]
+    );
+  };
+  
+  const handleDeleteSelected = async () => {
+    if (selectedTransactions.length === 0) return;
+    setLoading(true);
+    try {
+      const user_id = localStorage.getItem("id");
+      await axios.post(
+        `/transactions/delete-selected?user_id=${user_id}`, //updated endpoint & query param
+        {
+          transaction_ids: selectedTransactions, 
+        }
+      );
+      showToast("Selected transactions deleted");
+      fetchTransactions();
+      setSelectedTransactions([]);
+    } catch (error) {
+      console.error("Error deleting selected:", error);
+      showToast("Failed to delete selected", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleDeleteAll = async () => {
+    setLoading(true);
+    try {
+      const user_id = localStorage.getItem("id");
+      await axios.delete(`/all-transactions/${user_id}`); 
+      showToast("All transactions deleted");
+      fetchTransactions();
+    } catch (error) {
+      console.error("Error deleting all:", error);
+      showToast("Failed to delete all", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
@@ -309,17 +324,33 @@ export const TransactionList = () => {
           </button>
         </div>
 
-
       </div>
 
-      {/* Transaction List */}
-      <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950 ">
+      <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950">
         <div className="mt-6 bg-white dark:bg-gray-950 p-4 rounded-lg shadow-inner">
-          <h3 className="text-xl font-semibold mb-4 text-violet-500">
-            Filtered Transactions
-          </h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-violet-500">Filtered Transactions</h3>
+            {selectedTransactions.length > 0 ? (
+              <button
+                onClick={handleDeleteSelected}
+                className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+              >
+                <FaTrashAlt />
+                Delete Selected
+              </button>
+            ) : (
+              <button
+                onClick={handleDeleteAll}
+                className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+              >
+                <FaTrashAlt />
+                Delete All
+              </button>
+            )}
+          </div>
+
           {loading && <CustomLoader />}
-          <ul className="list-disc pl-5 space-y-2 ">
+          <ul className="list-disc pl-5 space-y-2">
             {filteredTransactions.map((transaction) => (
               <li
                 key={transaction._id}
@@ -332,8 +363,7 @@ export const TransactionList = () => {
                   <span
                     className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${transaction.category_id?.name === "Income"
                       ? "bg-green-200 text-green-800"
-                      : "bg-red-200 text-red-800"
-                      }`}
+                      : "bg-red-200 text-red-800"}`}
                   >
                     {transaction.category_id?.name || "N/A"}
                   </span>
@@ -345,7 +375,7 @@ export const TransactionList = () => {
                     {transaction.description}
                   </span>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 items-center">
                   <button
                     onClick={() => handleEditTransaction(transaction)}
                     className="text-violet-500 hover:text-violet-700"
@@ -358,10 +388,18 @@ export const TransactionList = () => {
                   >
                     <FaTrash />
                   </button>
-
+                  <input
+                    type="checkbox"
+                    checked={selectedTransactions.includes(transaction._id)}
+                    onChange={() => toggleTransactionSelection(transaction._id)}
+                    className="ml-3 accent-violet-600 w-4 h-4"
+                  />
                 </div>
               </li>
             ))}
+            {filteredTransactions.length === 0 && (
+              <p className="text-center text-gray-500 dark:text-white">No transactions found</p>
+            )}
           </ul>
         </div>
       </div>

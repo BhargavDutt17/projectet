@@ -5,12 +5,15 @@ import { FaWallet } from "react-icons/fa";
 import { SiDatabricks } from "react-icons/si";
 import { MdDescription } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const AdminAddCategory = () => {
     const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm();
     const [categories, setCategories] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false); // Add loading state
 
     const admin_id = localStorage.getItem("id") || "";
     const role_id = localStorage.getItem("role_id") || "";
@@ -21,12 +24,17 @@ export const AdminAddCategory = () => {
 
     // Fetch all categories (Income/Expense)
     const fetchCategories = async () => {
+        setLoading(true); // Start loading when form submission begins
         try {
             const response = await axios.get("/getAllCategories");
             setCategories(response.data);
         } catch (error) {
             console.error("Error fetching categories:", error);
+            showToast("Error fetching categories","error")
         }
+        finally {
+            setLoading(false); // Stop loading when the request completes
+          }
     };
 
     useEffect(() => {
@@ -40,6 +48,7 @@ export const AdminAddCategory = () => {
     }, [editingCategory, setValue]);
 
     const onSubmit = async (data) => {
+        setLoading(true); // Start loading when form submission begins
         const subCategoryData = {
             name: data.name.trim(),
             category_id: data.category_id,
@@ -54,25 +63,26 @@ export const AdminAddCategory = () => {
             if (editingCategory) {
                 response = await axios.put(`/editSubcategory/${editingCategory._id}`, subCategoryData);
                 if (response.status === 200) {
-                    alert(response.data.message);
+                    showToast(response.data.message);
                     navigate("/admin/categorieslist");
                 }
             } else {
                 response = await axios.post("/addSubCategory", subCategoryData);
                 if (response.status === 201) {
-                    alert(response.data.message);
+                    showToast(response.data.message);
                     reset();
                     fetchCategories();
                 }
             }
         } catch (error) {
             console.error("Error saving subcategory:", error.response?.data || error.message);
-            alert("Failed to save subcategory");
+            showToast( error.response?.data?.message || "Failed to save subcategory","error");
         }
     };
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 pt-6 transition-colors duration-300">
+            {loading&&<CustomLoader/>}
             <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="max-w-lg mx-auto bg-white dark:bg-slate-700 p-6 rounded-lg shadow-lg space-y-6 border border-violet-500"

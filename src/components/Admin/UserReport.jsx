@@ -11,6 +11,7 @@ export const UserReport = () => {
     generatedDate: "",
     generatedTime: "",
   });
+  const [selectedReports, setSelectedReports] = useState([]);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -22,13 +23,11 @@ export const UserReport = () => {
         console.error("Error fetching user reports:", error);
       }
     };
-
     fetchReports();
   }, []);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-
     if (name === "generatedDate") {
       if (value) {
         const [year, month, day] = value.split("-");
@@ -65,7 +64,6 @@ export const UserReport = () => {
 
     const matchDate =
       !filterDate || (reportDate && reportDate.toDateString() === filterDate.toDateString());
-
     const matchTime =
       !filterTime ||
       (reportHours === filterTime.hours && reportMinutes === filterTime.minutes);
@@ -92,6 +90,33 @@ export const UserReport = () => {
     }
   }, []);
 
+  const handleDeleteSelectedReports = async () => {
+    try {
+      await axios.post("/user-reports/delete-selected", {
+        report_id: selectedReports,
+      });
+  
+      startTransition(() => {
+        setReports((prevReports) =>
+          prevReports.filter((report) => !selectedReports.includes(report._id))
+        );
+        setSelectedReports([]);
+      });
+  
+      toast.success("Selected reports deleted successfully", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } catch (error) {
+      console.error("Error deleting selected reports:", error);
+      toast.error("Failed to delete selected reports", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }
+  };
+  
+
   const handleDeleteAllReports = async () => {
     try {
       await axios.delete("/user-reports");
@@ -109,6 +134,14 @@ export const UserReport = () => {
         autoClose: 5000,
       });
     }
+  };
+
+  const handleCheckboxToggle = (reportId) => {
+    setSelectedReports((prevSelected) =>
+      prevSelected.includes(reportId)
+        ? prevSelected.filter((id) => id !== reportId)
+        : [...prevSelected, reportId]
+    );
   };
 
   return (
@@ -141,13 +174,14 @@ export const UserReport = () => {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold text-violet-500">User Reports</h3>
             <button
-              onClick={handleDeleteAllReports}
+              onClick={selectedReports.length > 0 ? handleDeleteSelectedReports : handleDeleteAllReports}
+              disabled={selectedReports.length === 0 && reports.length === 0}
               className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 
-              hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm ocus:outline-none focus:ring-2 focus:ring-offset-2 
-              focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+              hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 
+              focus:ring-red-600 px-3 py-1 rounded-lg shadow disabled:opacity-50"
             >
               <FaTrashAlt />
-              Delete All
+              {selectedReports.length > 0 ? "Delete Selected" : "Delete All"}
             </button>
           </div>
           <ul className="list-disc pl-5 space-y-2">
@@ -156,15 +190,17 @@ export const UserReport = () => {
                 key={report._id}
                 className="bg-white dark:bg-slate-700 p-3 rounded-md shadow border border-violet-500 flex justify-between items-center"
               >
-                <div>
-                  <span className="font-medium text-gray-950 dark:text-white">
-                    {report.report_name}
-                  </span>
-                  <span className="ml-2 text-sm text-gray-950 dark:text-white">
-                    Generated At: {report.generated_at}
-                  </span>
+                <div className="flex items-center gap-2">
+                  <div>
+                    <span className="font-medium text-gray-950 dark:text-white">
+                      {report.report_name}
+                    </span>
+                    <span className="ml-2 text-sm text-gray-950 dark:text-white">
+                      Generated At: {report.generated_at}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex items-center gap-3">
                   {report.report_file_url ? (
                     <a
                       href={report.report_file_url}
@@ -183,11 +219,17 @@ export const UserReport = () => {
                   >
                     <FaTrash />
                   </button>
+                  <input
+                    type="checkbox"
+                    checked={selectedReports.includes(report._id)}
+                    onChange={() => handleCheckboxToggle(report._id)}
+                    className="mr-3 accent-violet-600 w-4 h-4"
+                  />
                 </div>
               </li>
             ))}
             {filteredReports.length === 0 && (
-              <p className="text-center text-gray-500 dark:text-white">No reports found</p>
+              <p className="text-center text-gray-500">No reports found</p>
             )}
           </ul>
         </div>
@@ -196,3 +238,5 @@ export const UserReport = () => {
     </div>
   );
 };
+
+export default UserReport;

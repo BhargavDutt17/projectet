@@ -1,8 +1,10 @@
-import React from "react";
+import React,{useState} from "react";
 import { useForm } from "react-hook-form";
 import { FaUser, FaLock } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 const Activate = () => {
   const {
@@ -11,8 +13,10 @@ const Activate = () => {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const onSubmit = async (data) => {
+    setLoading(true); // Start loading when form submission begins
     const formattedData = {
       email_or_username: data.email_or_username.trim(),
       password: data.password,
@@ -24,12 +28,14 @@ const Activate = () => {
       });
 
       if (res.status === 200) {
-        alert("Account reactivated successfully!");
+        showToast("Account reactivated successfully!","success");
         navigate("/login");
       }
     } catch (error) {
       console.error("Activation error:", error.response?.data || error.message);
-      alert("Error reactivating account. Please check your credentials.");
+      showToast(error.response?.data?.message ||"Error reactivating account. Please check your credentials.","error");
+    }finally {
+      setLoading(false); // Stop loading when the request completes
     }
   };
 
@@ -56,6 +62,7 @@ const Activate = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 pt-1 transition-colors duration-300">
+      {loading && <CustomLoader />}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500"

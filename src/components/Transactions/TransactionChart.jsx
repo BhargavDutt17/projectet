@@ -210,8 +210,8 @@ const TransactionChart = () => {
             maintainAspectRatio: false,
             animation: { duration: 1000 },
             scales: {
-              x: { ticks: { color: "#d1d5db" } },
-              y: { ticks: { color: "#d1d5db" } },
+              x: { ticks: { color: "#c084fc" } },
+              y: { ticks: { color: "#c084fc" } },
             },
           }}
         />
