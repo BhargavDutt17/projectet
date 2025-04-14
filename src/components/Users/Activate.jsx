@@ -16,28 +16,33 @@ const Activate = () => {
   const [loading, setLoading] = useState(false); // Add loading state
 
   const onSubmit = async (data) => {
-    setLoading(true); // Start loading when form submission begins
+    setLoading(true);
     const formattedData = {
       email_or_username: data.email_or_username.trim(),
       password: data.password,
     };
-
+  
     try {
       const res = await axios.post("/users/activate", formattedData, {
         headers: { "Content-Type": "application/json" },
       });
-
+  
       if (res.status === 200) {
-        showToast("Account reactivated successfully!","success");
+        showToast(res.data.message || "Account reactivated successfully!", "success");
         navigate("/login");
+      } else {
+        showToast("Activation failed. Please try again.", "error");
       }
     } catch (error) {
       console.error("Activation error:", error.response?.data || error.message);
-      showToast(error.response?.data?.message ||"Error reactivating account. Please check your credentials.","error");
-    }finally {
-      setLoading(false); // Stop loading when the request completes
+      showToast(
+        error.response?.data?.message || "Error reactivating account. Please check your credentials.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
-  };
+  };  
 
   // Validation rules (same as Login.jsx)
   const emailValidation = {

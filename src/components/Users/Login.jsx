@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { FaUser, FaLock } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import axios from "axios"; // Import axios for API calls
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+
 import { showToast } from '../Custom/ToastUtil';
 import CustomLoader from '../Custom/CustomLoader';
 
@@ -12,11 +13,12 @@ export const Login = ({ setRole }) => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const navigate = useNavigate(); // Initialize useNavigate
-  const [loading, setLoading] = useState(false); // Add loading state
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data) => {
-    setLoading(true); // Start loading when form submission begins
+    setLoading(true);
+
     const formattedData = {
       email_or_username: data.email_or_username.trim(),
       password: data.password,
@@ -29,6 +31,7 @@ export const Login = ({ setRole }) => {
 
       if (res.status === 200) {
         showToast("Login successful!", "success");
+
         localStorage.setItem("id", res.data.user._id);
         localStorage.setItem("role", res.data.user.role.name);
         localStorage.setItem("role_id", res.data.user.role._id);
@@ -41,34 +44,28 @@ export const Login = ({ setRole }) => {
           navigate("/admin/dashboard");
         }
       }
-    }
-    // Inside your catch block
-    catch (error) {
+    } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
       showToast(
         error.response?.data?.message || "Login failed. Please check your credentials.",
         "error"
       );
-
-    }finally {
-      setLoading(false); // Stop loading when the request completes
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Validation rules
   const emailValidation = {
     required: "Email or Username is required",
     validate: (value) => {
       const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      const usernamePattern = /^[a-zA-Z0-9_.-]+$/; // Allow alphanumeric usernames with dots, underscores, and dashes
+      const usernamePattern = /^[a-zA-Z0-9_.-]+$/;
 
       if (!emailPattern.test(value) && !usernamePattern.test(value)) {
         return "Invalid email or username format";
       }
     },
   };
-
-
 
   const passwordValidation = {
     required: "Password is required",
@@ -81,14 +78,13 @@ export const Login = ({ setRole }) => {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 pt-1 transition-colors duration-300">
       {loading && <CustomLoader />}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500"
       >
         <h2 className="text-3xl font-semibold text-center text-violet-500">Login</h2>
         <p className="text-sm text-center text-violet-500 font-medium">Login to your account</p>
-
-        {/* Input Field - Email */}
 
         <div className="relative">
           <FaUser className="absolute top-3 left-3 text-violet-500" />
@@ -100,12 +96,8 @@ export const Login = ({ setRole }) => {
             className="pl-10 pr-4 py-2 w-full rounded-md border border-violet-300 focus:border-violet-500 focus:ring-violet-500"
           />
           <span className="text-red-500 text-xs">{errors.email_or_username?.message}</span>
-
         </div>
 
-
-
-        {/* Input Field - Password */}
         <div className="relative">
           <FaLock className="absolute top-3 left-3 text-violet-500" />
           <input
@@ -118,7 +110,6 @@ export const Login = ({ setRole }) => {
           <span className="text-red-500 text-xs">{errors.password?.message}</span>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-800 hover:to-purple-900 
@@ -127,10 +118,9 @@ export const Login = ({ setRole }) => {
           Login
         </button>
 
-        {/* Links for Forgot Password and Register */}
         <div className="flex justify-between text-sm text-white">
-          <Link to="/forgotpassword" className="text-violet-300 hover:underline">Forgot Password?</Link>
-          <Link to="/activate" className="text-violet-300 hover:underline">Reactivate your account</Link>
+          <Link to="/forgotpassword" className="text-violet-500 hover:underline">Forgot Password?</Link>
+          <Link to="/activate" className="text-violet-500 hover:underline">Reactivate your account</Link>
         </div>
       </form>
     </div>

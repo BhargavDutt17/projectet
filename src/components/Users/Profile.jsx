@@ -165,32 +165,34 @@ export const Profile = () => {
     }
   };
   
-  const handleDeleteAccount = async () => { setLoading(true); // Start loading when form submission begins
+  const handleDeleteAccount = async () => {
+    setLoading(true); // Start loading when form submission begins
     const userId = localStorage.getItem("id");
-    const role = localStorage.getItem("role"); // Needed for admin bypass logic
+    const role = localStorage.getItem("role");
     const password = prompt("Please confirm your password to delete your account:");
-
+  
     if (!password) {
-      alert("Password is required to delete account.");
+      showToast("Password is required to delete account.", "error");
+      setLoading(false);
       return;
     }
-
+  
     try {
       const res = await axios.delete(`/user/delete/${userId}`, {
-        data: { password, role }, // password required unless admin
+        data: { password, role },
       });
-
-      alert(res.data.message || "Account deleted successfully.");
+  
+      showToast(res.data.message || "Account deleted successfully.", "success");
       localStorage.clear();
-      window.location.href = "/"; // Redirect to home/login
+      window.location.href = "/";
     } catch (error) {
       console.error("Delete Error:", error);
-      alert(error?.response?.data?.message || "Failed to delete account.");
-    }finally {
-      setLoading(false); // Stop loading when the request completes
+      showToast(error?.response?.data?.message || "Failed to delete account.", "error");
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   const handleDeactivateAccount = async () => { setLoading(true); // Start loading when form submission begins
     const userId = localStorage.getItem("id");
     const role = localStorage.getItem("role"); // For backend logic if needed

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
-import { FaUser, FaEnvelope, FaLock, FaKey} from "react-icons/fa";
-import { IoPersonCircleOutline} from "react-icons/io5"; 
+import { FaUser, FaEnvelope, FaLock, FaKey } from "react-icons/fa";
+import { IoPersonCircleOutline } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { showToast } from '../Custom/ToastUtil';
@@ -16,8 +16,13 @@ export const Register = () => {
   // Handle Profile Image Change
   const handleImageChange = (event) => {
     const file = event.target.files[0];
+    if (!file) {
+      showToast("No image selected.", "info"); // added user feedback
+      return;
+    }
     setProfileImage(file);
   };
+
 
   const onSubmit = async (data) => {
     setLoading(true); // Start loading when form submission begins
@@ -35,23 +40,25 @@ export const Register = () => {
       formData.append("profile_image", profileImage);
     }
 
+    // No major changes needed; just improving one area
+
     try {
       const response = await axios.post("/users/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (response.data.message) {
-        showToast("Registration successful!","success");
-        navigate("/login"); // Redirect to login
-      } else {
-        showToast("Registration failed.","error");
-      }
+      showToast(response.data.message || "Registration successful!", "success");
+      navigate("/login"); // Redirect to login
     } catch (error) {
       console.error("Registration error:", error.response?.data || error.message);
-      showToast( error.response?.data?.message ||"Error registering. Please check console for details.","error");
-    }finally {
+      showToast(
+        error.response?.data?.message || "Error registering. Please check console for details.",
+        "error"
+      );
+    } finally {
       setLoading(false); // Stop loading when the request completes
     }
+
   };
 
   // Validation rules
@@ -86,8 +93,8 @@ export const Register = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-       {/* Show loader if registration is in progress */}
-       {loading && <CustomLoader />}
+      {/* Show loader if registration is in progress */}
+      {loading && <CustomLoader />}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl border border-violet-500 space-y-6"

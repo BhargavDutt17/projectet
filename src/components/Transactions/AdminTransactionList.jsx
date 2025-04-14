@@ -4,11 +4,15 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MdCancel } from "react-icons/md";
+import { showToast } from '../Custom/ToastUtil';
+import CustomLoader from '../Custom/CustomLoader';
 
 export const AdminTransactionList = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const user_id = location.state?.user_id || localStorage.getItem("selected_user_id");
 
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -22,25 +26,34 @@ export const AdminTransactionList = () => {
   const [subCategories, setSubCategories] = useState([]);
 
   const fetchTransactions = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`/getTransactionByUserId/${user_id}`);
       setTransactions(response.data);
     } catch (error) {
       console.error("Error fetching user transactions:", error);
+      showToast("Failed to fetch user transactions.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchCategories = async () => {
+    setLoading(true);
     try {
       const response = await axios.get("/getAllCategories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+      showToast("Failed to fetch categories.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchSubCategories = async (categoryId) => {
     if (!categoryId) return;
+    setLoading(true);
     try {
       const response = await axios.get(`/getSubCategoryByCategoryId/${categoryId}`, {
         params: { user_id },
@@ -48,40 +61,71 @@ export const AdminTransactionList = () => {
       setSubCategories(response.data);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
+      showToast("Failed to fetch subcategories.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUserSearch = async () => {
     if (!searchTerm.trim()) return;
-
+    setLoading(true);
     try {
       const response = await axios.get(`/admin/getTransactionsByUserSearch?q=${searchTerm}`);
       setTransactions(response.data || []);
 
       if (response.data.length > 0 && response.data[0].user_id?._id) {
         const searchedUserId = response.data[0].user_id._id;
-        localStorage.setItem("selected_user_id", searchedUserId); // update globally
+        localStorage.setItem("selected_user_id", searchedUserId);
       }
     } catch (error) {
       console.error("Error searching transactions:", error);
-      alert("No user or transactions found.");
+      showToast("No user or transactions found.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-
-  useEffect(() => {
-    fetchTransactions();
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (filters.type) {
-      fetchSubCategories(filters.type);
-    } else {
-      setSubCategories([]);
-      setFilters((prev) => ({ ...prev, category: "" }));
+  const generateReport = async () => {
+    const updatedUserId = localStorage.getItem("selected_user_id");
+    if (!updatedUserId) {
+      showToast("User ID not found.", "error");
+      return;
     }
-  }, [filters.type]);
+
+    const params = { user_id: updatedUserId };
+    if (filters.startDate) params.start_date = filters.startDate.split("-").reverse().join("/");
+    if (filters.endDate) params.end_date = filters.endDate.split("-").reverse().join("/");
+    if (filters.type) params.category_id = filters.type;
+    if (filters.category) params.subcategory_id = filters.category;
+
+    setLoading(true);
+    try {
+      const response = await axios.get("/admin/generateTransactionReport", {
+        params,
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `transaction_report_${Date.now()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("Report downloaded successfully!", "success");
+    } catch (error) {
+      console.error("Error generating report:", error);
+      showToast("Failed to generate report.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -107,85 +151,27 @@ export const AdminTransactionList = () => {
     )}/${date.getFullYear()}`;
   };
 
-  const generateReport = async () => {
-    const updatedUserId = localStorage.getItem("selected_user_id");
+  useEffect(() => {
+    fetchTransactions();
+    fetchCategories();
+  }, []);
 
-    if (!updatedUserId) {
-      alert("User ID not found.");
-      return;
-    }
-
-    const params = {
-      user_id: updatedUserId,
-    };
-
-    if (filters.startDate) {
-      params.start_date = filters.startDate.split("-").reverse().join("/");
-    }
-    if (filters.endDate) {
-      params.end_date = filters.endDate.split("-").reverse().join("/");
-    }
+  useEffect(() => {
     if (filters.type) {
-      params.category_id = filters.type;
+      fetchSubCategories(filters.type);
+    } else {
+      setSubCategories([]);
+      setFilters((prev) => ({ ...prev, category: "" }));
     }
-    if (filters.category) {
-      params.subcategory_id = filters.category;
-    }
-
-    try {
-      const response = await axios.get("/admin/generateTransactionReport", {
-        params,
-        responseType: "blob",
-      });
-
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `transaction_report_${Date.now()}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Error generating report:", error);
-      alert("Failed to generate report.");
-    }
-  };
-
-
-
-  // const navigate = useNavigate();
-
-  // const handleEditTransaction = (transaction) => {
-  //   navigate("/user/addtransaction", { state: { transaction } });
-  // };
-
-  // const handleDeleteTransaction = async (transactionId) => {
-  //   try {
-  //     const response = await axios.delete(`/deleteTransaction/${transactionId}`, {
-  //       params: { user_id },
-  //     });
-
-  //     if (response.status === 200) {
-  //       alert("Transaction deleted successfully!");
-  //       fetchTransactions();
-  //     } else {
-  //       alert("Failed to delete transaction.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error deleting transaction:", error);
-  //     alert("Error deleting transaction. Please try again.");
-  //   }
-  // };
+  }, [filters.type]);
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
+      {loading && <CustomLoader />}
+
       <div className="mx-auto grid grid-cols-1 md:grid-cols-6 gap-6 rounded-lg">
         <div className="col-span-1 relative">
-        <label className="block text-violet-500 text-center">Search</label>
+          <label className="block text-violet-500 text-center">Search</label>
           <input
             type="text"
             placeholder="Search by username, email, name..."
@@ -203,6 +189,7 @@ export const AdminTransactionList = () => {
             />
           )}
         </div>
+
         <div className="col-span-1">
           <label className="block text-violet-500 text-center">Start Date</label>
           <input
@@ -273,10 +260,8 @@ export const AdminTransactionList = () => {
 
       <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950 ">
         <div className="mt-6 bg-white dark:bg-gray-950 p-4 rounded-lg shadow-inner">
-          <h3 className="text-xl font-semibold mb-4 text-violet-500">
-            Filtered Transactions
-          </h3>
-          <ul className="list-disc pl-5 space-y-2 ">
+          <h3 className="text-xl font-semibold mb-4 text-violet-500">Filtered Transactions</h3>
+          <ul className="list-disc pl-5 space-y-2">
             {filteredTransactions.map((transaction) => (
               <li
                 key={transaction._id}
@@ -302,20 +287,6 @@ export const AdminTransactionList = () => {
                     {transaction.description}
                   </span>
                 </div>
-                {/* <div className="flex space-x-3">
-                  <button
-                    onClick={() => handleEditTransaction(transaction)}
-                    className="text-violet-500 hover:text-violet-700"
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTransaction(transaction._id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <FaTrash />
-                  </button>
-                </div> */}
               </li>
             ))}
           </ul>

@@ -10,29 +10,37 @@ const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async ({ password }) => {
-    setLoading(true); // Start loading when form submission begins
+    setLoading(true);
     try {
       const res = await axios.post('/users/resetpassword/', {
         token,
         password
       });
-      showToast(res.data.message);
+
+      showToast(res.data.message || "Password reset successful!");
       navigate("/login");
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      showToast( error.response?.data?.message ||"Failed to reset password. Link may be expired.","error");
-    }finally {
-      setLoading(false); // Stop loading when the request completes
+      showToast(
+        error.response?.data?.message || "Failed to reset password. Link may be expired.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 pt-1 transition-colors duration-300">
       {loading && <CustomLoader />}
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500">
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="max-w-md mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-6 border border-violet-500"
+      >
         <h2 className="text-3xl font-semibold text-center text-violet-500">Reset Password</h2>
         <p className="text-sm text-center text-violet-500 font-medium">Enter a new password</p>
 
@@ -63,7 +71,11 @@ const ResetPassword = () => {
           <span className="text-red-500 text-xs">{errors.confirm?.message}</span>
         </div>
 
-        <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-800 hover:to-purple-900 text-violet-200 font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+        <button
+          type="submit"
+          className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-800 hover:to-purple-900 
+          text-violet-200 font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
+        >
           Reset Password
         </button>
       </form>
