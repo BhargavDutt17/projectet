@@ -84,12 +84,21 @@ export const Profile = () => {
         showToast("Username updated successfully.", "success"); // Success toast for username update
       }
   
-      // Update email if it has changed
-      if (data.email !== userData.email) {
-        await axios.put(`/update-email/${userId}`, { new_email: data.email });
-        console.log("Updated Email:", data.email);
-        showToast("Email updated successfully.", "success"); // Success toast for email update
-      }
+     // Update email
+    if (data.email !== userData.email) {
+      console.log("Sending email update with payload:", { new_email: data.email });
+
+      await axios.put(`/update-email/${userId}`, 
+        { new_email: data.email }, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      showToast("Email updated successfully.", "success");
+    }
     } catch (error) {
       console.error("Error updating user data:", error);
       showToast("Error updating user data. Please try again.", "error"); // Error toast in case of failure

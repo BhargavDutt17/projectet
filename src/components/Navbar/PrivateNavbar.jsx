@@ -79,7 +79,7 @@ export const PrivateNavbar = () => {
     { path: "/admin/admincategorieslist", label: "Categories List" },
     { path: "/admin/userreport", label: "Users Report" },
     { path: "/admin/profile", label: "Profile" },
-    { path: "/admin/userchart", label: "UserChart" },
+  
   ];
 
 
