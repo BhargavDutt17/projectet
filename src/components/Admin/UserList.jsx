@@ -260,7 +260,8 @@ export const UserList = () => {
                                     setLoading(false); // Stop loading when the request completes
                                   }
                             }}
-                            className="w-full p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 
+      focus:ring-opacity-50 bg-violet-700 text-violet-100"
                         >
                             Generate Report
                         </button>
@@ -285,7 +286,8 @@ export const UserList = () => {
                                     setLoading(false); // Stop loading when the request completes
                                   }
                             }}
-                            className="w-full p-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+                            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 
+      focus:ring-opacity-50 bg-violet-700 text-violet-100"
                         >
                             Download Report
                         </button>

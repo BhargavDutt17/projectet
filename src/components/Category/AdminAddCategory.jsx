@@ -64,7 +64,7 @@ export const AdminAddCategory = () => {
                 response = await axios.put(`/editSubcategory/${editingCategory._id}`, subCategoryData);
                 if (response.status === 200) {
                     showToast(response.data.message);
-                    navigate("/admin/categorieslist");
+                    navigate("/admin/admincategorieslist");
                 }
             } else {
                 response = await axios.post("/addSubCategory", subCategoryData);

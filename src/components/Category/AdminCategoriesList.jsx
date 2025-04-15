@@ -15,22 +15,34 @@ export const AdminCategoriesList = () => {
         fetchCategories();
     }, []);
 
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
     const fetchCategories = async () => {
-        setLoading(true); // Start loading when form submission begins
+        setLoading(true);
         try {
             const userId = localStorage.getItem("id");
             const roleId = localStorage.getItem("role_id");
             const role = localStorage.getItem("role");
-
-            if (!userId || !roleId || !role) {
-                console.error("Missing role or user_id");
+    
+            if (!roleId || !role) {
+                console.error("Missing Role ID or Role in localStorage");
                 return;
             }
-
-            const response = await axios.get(`/getSubCategoryByCategoryId/all`, {
-                params: { user_id: userId, role_id: roleId }
-            });
-
+    
+            const params = { role_id: roleId };
+            if (role.toLowerCase() !== "admin") {
+                if (!userId) {
+                    console.error("User ID is required for non-admins");
+                    return;
+                }
+                params.user_id = userId;
+            }
+    
+            const response = await axios.get(`/getAllSubCategories`, { params });
+            console.log('Raw response data:', response.data); // Log the raw response before formatting
+            
             const formattedCategories = response.data.map(subcategory => ({
                 _id: subcategory._id,
                 name: subcategory.name,
@@ -38,19 +50,22 @@ export const AdminCategoriesList = () => {
                     _id: subcategory.category_id?._id || subcategory.category_id,
                     name: subcategory.category_id?.name || "Unknown Category"
                 },
-                type: subcategory.category_id?.name?.toLowerCase() || "unknown",  // Standardize type to lowercase for comparison
-                description: subcategory.description
-                    ?.replace(/^\((Userdefined|Admindefined)\)\s*/, "")
-                    .trim() || "(No Description)"
+                type: subcategory.category_id?.name?.toLowerCase() || "unknown",
+                description:
+                    subcategory.description
+                        ?.replace(/^\((Userdefined|Admindefined)\)\s*/, "")
+                        .trim() || "(No Description)"
             }));
+    
             setCategories(formattedCategories);
         } catch (error) {
-            console.error("Error fetching admin categories:", error);
-            showToast("Error fetching admin categories");
+            console.error("Error fetching categories:", error);
+            showToast("Error fetching categories", "error");
         } finally {
-            setLoading(false); // Stop loading when the request completes
+            setLoading(false);
         }
     };
+    
 
     const handleDelete = async (id) => {
         setLoading(true); // Start loading when form submission begins

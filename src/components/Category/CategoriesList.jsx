@@ -19,16 +19,26 @@ export const CategoriesList = () => {
         setLoading(true);
         try {
             const userId = localStorage.getItem("id");
-
-            if (!userId) {
-                console.error("User ID not found in localStorage");
+            const roleId = localStorage.getItem("role_id");
+            const role = localStorage.getItem("role");
+    
+            if (!roleId || !role) {
+                console.error("Missing Role ID or Role in localStorage");
                 return;
             }
-
-            const response = await axios.get(`/getSubCategoryByCategoryId/all`, {
-                params: { user_id: userId },
-            });
-
+    
+            const params = { role_id: roleId };
+            if (role.toLowerCase() !== "admin") {
+                if (!userId) {
+                    console.error("User ID is required for non-admins");
+                    return;
+                }
+                params.user_id = userId;
+            }
+    
+            const response = await axios.get(`/getAllSubCategories`, { params });
+            console.log('Raw response data:', response.data); // Log the raw response before formatting
+            
             const formattedCategories = response.data.map(subcategory => ({
                 _id: subcategory._id,
                 name: subcategory.name,
@@ -37,11 +47,12 @@ export const CategoriesList = () => {
                     name: subcategory.category_id?.name || "Unknown Category"
                 },
                 type: subcategory.category_id?.name?.toLowerCase() || "unknown",
-                description: subcategory.description
-                    ?.replace(/^\((Userdefined|Admindefined)\)\s*/, "")
-                    .trim() || "(No Description)"
+                description:
+                    subcategory.description
+                        ?.replace(/^\((Userdefined|Admindefined)\)\s*/, "")
+                        .trim() || "(No Description)"
             }));
-
+    
             setCategories(formattedCategories);
         } catch (error) {
             console.error("Error fetching categories:", error);
@@ -50,6 +61,8 @@ export const CategoriesList = () => {
             setLoading(false);
         }
     };
+    
+    
 
     const handleDelete = async (id) => {
         setLoading(true);
