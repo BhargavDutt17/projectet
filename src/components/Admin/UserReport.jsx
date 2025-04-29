@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useTransition } from "react";
 import axios from "axios";
 import { FaTrash, FaTrashAlt } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../Custom/ToastUtil";
+import CustomLoader from "../Custom/CustomLoader";
 
 export const UserReport = () => {
   const [reports, setReports] = useState([]);
@@ -13,14 +13,19 @@ export const UserReport = () => {
   });
   const [selectedReports, setSelectedReports] = useState([]);
   const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchReports = async () => {
+      setLoading(true);
       try {
         const response = await axios.get("/user-reports");
         setReports(response.data.reports);
       } catch (error) {
         console.error("Error fetching user reports:", error);
+        showToast("Error fetching user reports", "error");
+      } finally {
+        setLoading(false);
       }
     };
     fetchReports();
@@ -72,25 +77,24 @@ export const UserReport = () => {
   });
 
   const handleDeleteReport = useCallback(async (reportId) => {
+    setLoading(true);
     try {
       await axios.delete(`/user-reports/${reportId}`);
       startTransition(() => {
         setReports((prevReports) => prevReports.filter((r) => r._id !== reportId));
       });
-      toast.success("Report deleted successfully", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Report deleted successfully", "success");
     } catch (error) {
       console.error("Error deleting report:", error);
-      toast.error("Failed to delete report", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Failed to delete report", "error");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   const handleDeleteSelectedReports = async () => {
+    if (selectedReports.length === 0) return;
+    setLoading(true);
     try {
       await axios.post("/user-reports/delete-selected", {
         report_id: selectedReports,
@@ -103,36 +107,28 @@ export const UserReport = () => {
         setSelectedReports([]);
       });
   
-      toast.success("Selected reports deleted successfully", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Selected reports deleted successfully", "success");
     } catch (error) {
       console.error("Error deleting selected reports:", error);
-      toast.error("Failed to delete selected reports", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Failed to delete selected reports", "error");
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   const handleDeleteAllReports = async () => {
+    setLoading(true);
     try {
       await axios.delete("/user-reports");
       startTransition(() => {
         setReports([]);
       });
-      toast.success("All reports deleted successfully", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("All reports deleted successfully", "success");
     } catch (error) {
       console.error("Error deleting all reports:", error);
-      toast.error("Failed to delete all reports", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      showToast("Failed to delete all reports", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -146,6 +142,8 @@ export const UserReport = () => {
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
+      {loading && <CustomLoader />}
+
       <div className="mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="col-span-1">
           <label className="block text-violet-500 text-center">Generated Date</label>
@@ -229,12 +227,11 @@ export const UserReport = () => {
               </li>
             ))}
             {filteredReports.length === 0 && (
-              <p className="text-center text-gray-500">No reports found</p>
+              <p className="text-center text-violet-400">No reports found</p>
             )}
           </ul>
         </div>
       </div>
-      <ToastContainer />
     </div>
   );
 };

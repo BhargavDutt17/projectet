@@ -29,3 +29,6 @@ delete and deactivate account is working in user profile
 14-04-2025
 project is complete some minor things are left but other then that everything is complete use 
 https://app.mailslurp.com/emails   or yopmail if you want to open link of reset password.
+
+29-04-2025
+some minor twick in ui of some component

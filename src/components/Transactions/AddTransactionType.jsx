@@ -9,7 +9,7 @@ import CustomLoader from '../Custom/CustomLoader';
 
 export const AddTransactionType = () => {
   const [editingCategory, setEditingCategory] = useState(null);
-  const [loading, setLoading] = useState(false); // ✅ Added loader state
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -36,7 +36,12 @@ export const AddTransactionType = () => {
   }, [location.state, setValue]);
 
   const onSubmit = async (data) => {
-    setLoading(true); // ✅ Show loader
+    if (!user_id || !role_id || !role_name) {
+      showToast("User credentials are missing. Please login again.", "error");
+      return;
+    }
+
+    setLoading(true);
     const payload = {
       name: data.name.trim(),
       description: data.description?.trim() || ""
@@ -63,7 +68,7 @@ export const AddTransactionType = () => {
       console.error("Error adding/editing category:", err.response?.data || err.message);
       showToast(err.response?.data?.message || "Something went wrong.", "error");
     } finally {
-      setLoading(false); // ✅ Hide loader
+      setLoading(false);
     }
   };
 
@@ -79,7 +84,7 @@ export const AddTransactionType = () => {
 
   return (
     <div className="min-h-screen p-4 bg-white dark:bg-gray-950 text-violet-500">
-      {loading && <CustomLoader />} {/* ✅ Loader shown here */}
+      {loading && <CustomLoader />}
 
       <form
         onSubmit={handleSubmit(onSubmit)}

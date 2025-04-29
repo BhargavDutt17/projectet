@@ -25,7 +25,10 @@ export const TransactionList = () => {
     try {
       setLoading(true);
       const user_id = localStorage.getItem("id");
-      if (!user_id) return console.error("User ID not found");
+      if (!user_id) {
+        showToast("User ID not found", "error");
+        return;
+      }
 
       const response = await axios.get(`/getTransactionByUserId/${user_id}`);
       setTransactions(response.data);
@@ -38,8 +41,8 @@ export const TransactionList = () => {
   };
 
   const fetchCategories = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await axios.get("/getAllCategories");
       setCategories(response.data);
     } catch (error) {
@@ -52,8 +55,8 @@ export const TransactionList = () => {
 
   const fetchSubCategories = async (categoryId) => {
     if (!categoryId) return;
-    setLoading(true);
     try {
+      setLoading(true);
       const user_id = localStorage.getItem("id") || "";
       const role_id = localStorage.getItem("role_id") || "";
       const response = await axios.get(`/getSubCategoryByCategoryId/${categoryId}`, {
@@ -69,10 +72,13 @@ export const TransactionList = () => {
   };
 
   const fetchLatestReport = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const user_id = localStorage.getItem("id");
-      if (!user_id) return;
+      if (!user_id) {
+        showToast("User ID not found", "error");
+        return;
+      }
       const response = await axios.get(`/getLatestTransactionReport/${user_id}`);
       setReportUrl(response.data.report_file_url || null);
     } catch (error) {
@@ -123,8 +129,8 @@ export const TransactionList = () => {
   });
 
   const generateReport = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const user_id = localStorage.getItem("id");
       const startDate = filters.startDate ? filters.startDate.split("-").reverse().join("/") : "";
       const endDate = filters.endDate ? filters.endDate.split("-").reverse().join("/") : "";
@@ -138,7 +144,7 @@ export const TransactionList = () => {
         showToast("Report generated successfully!");
         setReportUrl(response.data.report_file_url);
       } else {
-        showToast("Failed to generate report.");
+        showToast("Failed to generate report", "error");
       }
     } catch (error) {
       console.error("Error generating report:", error);
@@ -155,10 +161,13 @@ export const TransactionList = () => {
   };
 
   const handleDeleteTransaction = async (transactionId) => {
-    setLoading(true); //
     try {
-      const user_id = localStorage.getItem("id"); // Get user ID from local storage
-      if (!user_id) return alert("User ID not found. Please log in.");
+      setLoading(true);
+      const user_id = localStorage.getItem("id");
+      if (!user_id) {
+        showToast("User ID not found. Please log in.", "error");
+        return;
+      }
 
       const response = await axios.delete(`/deleteTransaction/${transactionId}`, {
         params: { user_id },
@@ -166,16 +175,15 @@ export const TransactionList = () => {
 
       if (response.status === 200) {
         showToast("Transaction deleted successfully!");
-        fetchTransactions(); // Refresh the transaction list
+        fetchTransactions();
       } else {
-        showToast("Failed to delete transaction.");
+        showToast("Failed to delete transaction", "error");
       }
     } catch (error) {
       console.error("Error deleting transaction:", error);
-      showToast("Error deleting transaction. Please try again.");
-    }
-    finally {
-      setLoading(false); // Stop loading when the request completes
+      showToast("Error deleting transaction. Please try again.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,18 +192,15 @@ export const TransactionList = () => {
       prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id]
     );
   };
-  
+
   const handleDeleteSelected = async () => {
     if (selectedTransactions.length === 0) return;
-    setLoading(true);
     try {
+      setLoading(true);
       const user_id = localStorage.getItem("id");
-      await axios.post(
-        `/transactions/delete-selected?user_id=${user_id}`, //updated endpoint & query param
-        {
-          transaction_ids: selectedTransactions, 
-        }
-      );
+      await axios.post(`/transactions/delete-selected?user_id=${user_id}`, {
+        transaction_ids: selectedTransactions,
+      });
       showToast("Selected transactions deleted");
       fetchTransactions();
       setSelectedTransactions([]);
@@ -206,12 +211,12 @@ export const TransactionList = () => {
       setLoading(false);
     }
   };
-  
+
   const handleDeleteAll = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const user_id = localStorage.getItem("id");
-      await axios.delete(`/all-transactions/${user_id}`); 
+      await axios.delete(`/all-transactions/${user_id}`);
       showToast("All transactions deleted");
       fetchTransactions();
     } catch (error) {
@@ -221,188 +226,190 @@ export const TransactionList = () => {
       setLoading(false);
     }
   };
-  
 
   return (
-    <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
-      <div className="mx-auto grid grid-cols-1 md:grid-cols-6 gap-6 rounded-lg">
-        {/* Start Date Filter */}
-        <div className="col-span-1">
-          <label className="block text-violet-500 text-center">Start Date</label>
-          <input
-            type="date"
-            name="startDate"
-            value={filters.startDate}
-            onChange={handleFilterChange}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+    <>
+      {loading && <CustomLoader />}
+      <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
+        <div className="mx-auto grid grid-cols-1 md:grid-cols-6 gap-6 rounded-lg">
+          {/* Start Date Filter */}
+          <div className="col-span-1">
+            <label className="block text-violet-500 text-center">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+              className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
                 bg-white dark:bg-slate-700 border border-violet-500 "
-          />
-        </div>
-
-        {/* End Date Filter */}
-        <div className="col-span-1">
-          <label className="block text-violet-500 text-center">End Date</label>
-          <input
-            type="date"
-            name="endDate"
-            value={filters.endDate}
-            onChange={handleFilterChange}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-                bg-white dark:bg-slate-700 border border-violet-500"
-          />
-        </div>
-
-        {/* Transaction Type Filter */}
-        <div className="relative col-span-1">
-          <label className="block text-violet-500 text-center">Type</label>
-          <select
-            name="type"
-            value={filters.type}
-            onChange={handleFilterChange}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-                appearance-none bg-white dark:bg-slate-700 border border-violet-500"
-          >
-            <option value="">All Types</option>
-            {categories.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/3 text-violet-500" />
-        </div>
-
-        {/* Category Filter */}
-        <div className="relative col-span-1">
-          <label className="block text-violet-500 text-center">Category</label>
-          <select
-            name="category"
-            value={filters.category}
-            onChange={handleFilterChange}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-            appearance-none bg-white dark:bg-slate-700 border border-violet-500"
-          >
-            <option value="">All Categories</option>
-            {subCategories.map((sub) => (
-              <option key={sub._id} value={sub._id}>
-                {sub.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/4 text-violet-500" />
-        </div>
-
-        {/* Generate Report Button */}
-        <div className="flex justify-center mt-6 mb-6">
-          <button onClick={generateReport}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-  bg-violet-700 text-violet-100"
-          >
-            Generate Report
-          </button>
-        </div>
-
-        {/* Doenload Report Button */}
-        <div className="flex justify-center mt-6 mb-6">
-          <button
-            onClick={() => {
-              if (reportUrl) {
-                const link = document.createElement('a');
-                link.href = reportUrl;
-                link.download = 'Transaction_Report'; // Optional: You can specify the filename here
-                link.click(); // Trigger the download
-              } else {
-                alert("No report available. Please generate one first.");
-              }
-            }}
-            className={`w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 
-      focus:ring-opacity-50 bg-violet-700 text-violet-100 
-      ${!reportUrl ? "opacity-50 cursor-not-allowed" : ""}`} // Disable button if no report
-            disabled={!reportUrl}
-          >
-            Download Report
-          </button>
-        </div>
-
-      </div>
-
-      <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950">
-        <div className="mt-6 bg-white dark:bg-gray-950 p-4 rounded-lg shadow-inner">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-violet-500">Filtered Transactions</h3>
-            {selectedTransactions.length > 0 ? (
-              <button
-                onClick={handleDeleteSelected}
-                className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
-              >
-                <FaTrashAlt />
-                Delete Selected
-              </button>
-            ) : (
-              <button
-                onClick={handleDeleteAll}
-                className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
-              >
-                <FaTrashAlt />
-                Delete All
-              </button>
-            )}
+            />
           </div>
 
-          {loading && <CustomLoader />}
-          <ul className="list-disc pl-5 space-y-2">
-            {filteredTransactions.map((transaction) => (
-              <li
-                key={transaction._id}
-                className="bg-white dark:bg-slate-700 p-3 rounded-md shadow border border-violet-500 flex justify-between items-center"
-              >
-                <div>
-                  <span className="font-medium text-gray-950 dark:text-white">
-                    {formatDate(transaction.date)}
-                  </span>
-                  <span
-                    className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${transaction.category_id?.name === "Income"
-                      ? "bg-green-200 text-green-800"
-                      : "bg-red-200 text-red-800"}`}
-                  >
-                    {transaction.category_id?.name || "N/A"}
-                  </span>
-                  <span className="ml-2 text-gray-950 dark:text-white">
-                    {transaction.subcategory_id?.name || "N/A"} - ₹
-                    {transaction.amount.toLocaleString()}
-                  </span>
-                  <span className="ml-2 text-sm text-gray-950 dark:text-white">
-                    {transaction.description}
-                  </span>
-                </div>
-                <div className="flex space-x-3 items-center">
-                  <button
-                    onClick={() => handleEditTransaction(transaction)}
-                    className="text-violet-500 hover:text-violet-700"
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTransaction(transaction._id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <FaTrash />
-                  </button>
-                  <input
-                    type="checkbox"
-                    checked={selectedTransactions.includes(transaction._id)}
-                    onChange={() => toggleTransactionSelection(transaction._id)}
-                    className="ml-3 accent-violet-600 w-4 h-4"
-                  />
-                </div>
-              </li>
-            ))}
-            {filteredTransactions.length === 0 && (
-              <p className="text-center text-gray-500 dark:text-white">No transactions found</p>
-            )}
-          </ul>
+          {/* End Date Filter */}
+          <div className="col-span-1">
+            <label className="block text-violet-500 text-center">End Date</label>
+            <input
+              type="date"
+              name="endDate"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+              className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+                bg-white dark:bg-slate-700 border border-violet-500"
+            />
+          </div>
+
+          {/* Transaction Type Filter */}
+          <div className="relative col-span-1">
+            <label className="block text-violet-500 text-center">Type</label>
+            <select
+              name="type"
+              value={filters.type}
+              onChange={handleFilterChange}
+              className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+                appearance-none bg-white dark:bg-slate-700 border border-violet-500"
+            >
+              <option value="">All Types</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/3 text-violet-500" />
+          </div>
+
+          {/* Category Filter */}
+          <div className="relative col-span-1">
+            <label className="block text-violet-500 text-center">Category</label>
+            <select
+              name="category"
+              value={filters.category}
+              onChange={handleFilterChange}
+              className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+            appearance-none bg-white dark:bg-slate-700 border border-violet-500"
+            >
+              <option value="">All Categories</option>
+              {subCategories.map((sub) => (
+                <option key={sub._id} value={sub._id}>
+                  {sub.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDownIcon className="w-5 h-5 absolute right-2 top-1/2 transform -translate-y-1/4 text-violet-500" />
+          </div>
+
+          {/* Generate Report Button */}
+          <div className="flex justify-center mt-6 mb-6">
+            <button onClick={generateReport}
+              className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+  bg-violet-700 text-violet-100"
+            >
+              Generate Report
+            </button>
+          </div>
+
+          {/* Doenload Report Button */}
+          <div className="flex justify-center mt-6 mb-6">
+            <button
+              onClick={() => {
+                if (reportUrl) {
+                  const link = document.createElement('a');
+                  link.href = reportUrl;
+                  link.download = 'Transaction_Report'; // Optional: You can specify the filename here
+                  link.click(); // Trigger the download
+                } else {
+                  alert("No report available. Please generate one first.");
+                }
+              }}
+              className={`w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 
+      focus:ring-opacity-50 bg-violet-700 text-violet-100 
+      ${!reportUrl ? "opacity-50 cursor-not-allowed" : ""}`} // Disable button if no report
+              disabled={!reportUrl}
+            >
+              Download Report
+            </button>
+          </div>
+
+        </div>
+
+        <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950">
+          <div className="mt-6 bg-white dark:bg-gray-950 p-4 rounded-lg shadow-inner">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-violet-500">Filtered Transactions</h3>
+              {selectedTransactions.length > 0 ? (
+                <button
+                  onClick={handleDeleteSelected}
+                  className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+                >
+                  <FaTrashAlt />
+                  Delete Selected
+                </button>
+              ) : (
+                <button
+                  onClick={handleDeleteAll}
+                  className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+                >
+                  <FaTrashAlt />
+                  Delete All
+                </button>
+              )}
+            </div>
+
+            {loading && <CustomLoader />}
+            <ul className="list-disc pl-5 space-y-2">
+              {filteredTransactions.map((transaction) => (
+                <li
+                  key={transaction._id}
+                  className="bg-white dark:bg-slate-700 p-3 rounded-md shadow border border-violet-500 flex justify-between items-center"
+                >
+                  <div>
+                    <span className="font-medium text-gray-950 dark:text-white">
+                      {formatDate(transaction.date)}
+                    </span>
+                    <span
+                      className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${transaction.category_id?.name === "Income"
+                        ? "bg-green-200 text-green-800"
+                        : "bg-red-200 text-red-800"}`}
+                    >
+                      {transaction.category_id?.name || "N/A"}
+                    </span>
+                    <span className="ml-2 text-gray-950 dark:text-white">
+                      {transaction.subcategory_id?.name || "N/A"} - ₹
+                      {transaction.amount.toLocaleString()}
+                    </span>
+                    <span className="ml-2 text-sm text-gray-950 dark:text-white">
+                      {transaction.description}
+                    </span>
+                  </div>
+                  <div className="flex space-x-3 items-center">
+                    <button
+                      onClick={() => handleEditTransaction(transaction)}
+                      className="text-violet-500 hover:text-violet-700"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTransaction(transaction._id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTrash />
+                    </button>
+                    <input
+                      type="checkbox"
+                      checked={selectedTransactions.includes(transaction._id)}
+                      onChange={() => toggleTransactionSelection(transaction._id)}
+                      className="ml-3 accent-violet-600 w-4 h-4"
+                    />
+                  </div>
+                </li>
+              ))}
+              {filteredTransactions.length === 0 && (
+                <p className="text-center text-gray-500 dark:text-white">No transactions found</p>
+              )}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

@@ -10,13 +10,14 @@ import {
   LinearScale,
 } from "chart.js";
 import { Doughnut, Pie, Bar } from "react-chartjs-2";
+import CustomLoader from "../Custom/CustomLoader";
+import { showToast } from "../Custom/ToastUtil";
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const UserChart = () => {
   const [users, setUsers] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const userRole = localStorage.getItem("role");
   if (userRole !== "admin") {
@@ -26,10 +27,12 @@ const UserChart = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoading(true);
         const response = await axios.get("/users/");
         setUsers(response.data);
       } catch (err) {
-        setError("Error fetching users data");
+        console.error("Error fetching users data:", err);
+        showToast("Error fetching users data", "error");
       } finally {
         setLoading(false);
       }
@@ -101,7 +104,7 @@ const UserChart = () => {
     plugins: {
       tooltip: {
         backgroundColor: "#1f2937",
-        titleColor: "#f9fafb",
+        titleColor: "#7c3aed",
         bodyColor: "#e5e7eb",
       },
     },
@@ -115,9 +118,7 @@ const UserChart = () => {
         </h1>
 
         {loading ? (
-          <p className="text-center">Loading...</p>
-        ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
+          <CustomLoader />
         ) : (
           <>
             {/* Top Row: Doughnut & Pie */}
@@ -137,7 +138,7 @@ const UserChart = () => {
               </div>
             </div>
 
-            {/* Bottom: Bar Chart */}
+            {/* Bottom: Violet Themed Bar Chart */}
             <div className="flex flex-col items-center w-full mt-6">
               <h2 className="text-2xl font-semibold text-indigo-500 mb-6">Bar Chart</h2>
               <div className="h-[500px] w-full md:w-[90%] lg:w-[80%]">
@@ -148,18 +149,30 @@ const UserChart = () => {
                     maintainAspectRatio: false,
                     animation: {
                       duration: 1500,
-                      easing: "easeOutQuart",
-                    },
-                    plugins: {
-                      legend: { display: false },
                     },
                     scales: {
-                      y: {
-                        beginAtZero: true,
-                        ticks: { color: "#9ca3af" },
-                      },
                       x: {
-                        ticks: { color: "#9ca3af" },
+                        ticks: {
+                          color: '#7c3aed',
+                        },
+                        grid: {
+                          color: '#c4b5fd',
+                        },
+                      },
+                      y: {
+                        ticks: {
+                          color: '#7c3aed',
+                        },
+                        grid: {
+                          color: '#c4b5fd',
+                        },
+                      },
+                    },
+                    plugins: {
+                      tooltip: {
+                        backgroundColor: "#1f2937",
+                        titleColor: "#7c3aed",
+                        bodyColor: "#e5e7eb",
                       },
                     },
                   }}

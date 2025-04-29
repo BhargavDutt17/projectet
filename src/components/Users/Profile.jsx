@@ -337,13 +337,13 @@ export const Profile = () => {
 
           {/* Modal for Confirmation */}
           {showModal && (
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                <h2 className="text-xl font-bold text-center mb-4">
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-950 p-6 rounded-lg shadow-lg w-96">
+                <h2 className="text-xl font-bold text-center mb-4 text-violet-500">
                   Confirm {modalAction === "delete" ? "Delete" : "Deactivate"} Account
                 </h2>
                 <div>
-                  <label htmlFor="password" className="block text-sm text-gray-600 mb-2">Enter your password</label>
+                  <label htmlFor="password" className="block text-sm text-violet-500 mb-2">Enter your password</label>
                   <input
                     type="password"
                     id="password"
@@ -356,13 +356,14 @@ export const Profile = () => {
                 <div className="mt-4 flex justify-end">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded-md mr-2"
+                    className="bg-violet-500 hover:bg-violet-700 px-4 py-2 rounded-md mr-2 text-white text-sm font-medium "
                   >
                     Cancel
                   </button>
                   <button
                     onClick={modalAction === "delete" ? handleDeleteAccount : handleDeactivateAccount}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+                    className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 px-4 py-2 rounded-md 
+                    text-sm font-medium"
                   >
                     Confirm
                   </button>

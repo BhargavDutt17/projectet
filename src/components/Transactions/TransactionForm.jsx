@@ -10,61 +10,52 @@ export const TransactionForm = () => {
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm();
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false); // Add loading state
 
   const transaction = location.state?.transaction || null;
-
-  // Fetch user_id and role_id from localStorage
   const user_id = localStorage.getItem("id") || "";
   const role_id = localStorage.getItem("role_id") || "";
+  const role_name = localStorage.getItem("role") || "user";
 
-  // Fetch categories (Income/Expense)
   const fetchCategories = async () => {
-    setLoading(true); // Start loading when form submission begins
+    setLoading(true);
     try {
-      const response = await axios.get("/getAllCategories");
-      setCategories(response.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      showToast("Error fetching categories","error")
-    }
-    finally {
-      setLoading(false); // Stop loading when the request completes
+      const { data } = await axios.get("/getAllCategories");
+      setCategories(data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+      showToast("Error fetching categories", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Fetch subcategories based on selected category
   const fetchSubCategories = async (categoryId) => {
-    setLoading(true); // Start loading when form submission begins
     if (!categoryId) return;
+    setLoading(true);
     try {
-      let url = `/getSubCategoryByCategoryId/${categoryId}`;
-      const role_name = localStorage.getItem("role") || "user";
-      url += `?user_id=${user_id}&role_name=${role_name}`;
-      const response = await axios.get(url);
-      setSubCategories(response.data || []);
-    } catch (error) {
-      console.error("Error fetching subcategories:", error);
-      showToast("Error fetching subcategories","error")
-    }finally {
-      setLoading(false); // Stop loading when the request completes
+      const res = await axios.get(`/getSubCategoryByCategoryId/${categoryId}?user_id=${user_id}&role_name=${role_name}`);
+      setSubCategories(res.data || []);
+    } catch (err) {
+      console.error("Error fetching subcategories:", err);
+      showToast("Error fetching subcategories", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Watch category selection
   const selectedCategory = watch("type");
+
   useEffect(() => {
     if (selectedCategory) fetchSubCategories(selectedCategory);
   }, [selectedCategory]);
 
-  // Load categories on mount
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Prefill form when editing a transaction
   useEffect(() => {
     if (transaction) {
       setValue("type", transaction.category_id?._id || "");
@@ -75,11 +66,10 @@ export const TransactionForm = () => {
     }
   }, [transaction, setValue]);
 
-  // Handle form submission
   const onSubmit = async (data) => {
-    setLoading(true); // Start loading when form submission begins
+    setLoading(true);
     try {
-      const transactionData = {
+      const payload = {
         user_id,
         role_id,
         category_id: data.type,
@@ -89,39 +79,36 @@ export const TransactionForm = () => {
         description: data.description || "",
       };
 
-      let response;
+      let res;
       if (transaction && transaction._id) {
-        response = await axios.put(`/editTransaction/${transaction._id}`, transactionData);
-        showToast(response.data.message);
-        navigate("/user/trasactionlists"); // Redirect only on update
+        res = await axios.put(`/editTransaction/${transaction._id}`, payload);
+        showToast(res.data.message || "Transaction updated successfully!", "success");
+        navigate("/user/trasactionlists");
       } else {
-        response = await axios.post("/addTransaction", transactionData);
-        showToast(response.data.message);
-        // Stay on the same page after adding a transaction
+        res = await axios.post("/addTransaction", payload);
+        showToast(res.data.message || "Transaction added successfully!", "success");
       }
-
-    } catch (error) {
-      console.error("Error submitting transaction:", error.response?.data || error.message);
-      showToast(`Failed to save transaction: ${error.response?.data?.message || "Unknown error"}`);
-    }finally {
-      setLoading(false); // Stop loading when the request completes
+    } catch (err) {
+      console.error("Error submitting transaction:", err);
+      showToast(err?.response?.data?.message || "Failed to save transaction", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Validation rules
   const validationRules = {
-    type: { required: { value: true, message: "Type is required" } },
+    type: { required: "Type is required" },
     amount: {
-      required: { value: true, message: "Amount is required" },
-      validate: (value) => value > 0 || "Amount must be positive",
+      required: "Amount is required",
+      validate: (val) => parseFloat(val) > 0 || "Amount must be positive",
     },
-    category: { required: { value: true, message: "Category is required" } },
-    date: { required: { value: true, message: "Date is required" } },
+    category: { required: "Category is required" },
+    date: { required: "Date is required" },
   };
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 pt-6 transition-colors duration-300">
-      {loading&&<CustomLoader/>}
+      {loading && <CustomLoader />}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-lg mx-auto bg-white dark:bg-slate-700 p-6 rounded-xl shadow-lg space-y-3 border border-violet-500"
@@ -133,15 +120,16 @@ export const TransactionForm = () => {
           <p className="text-violet-500 font-medium">Fill in the details below.</p>
         </div>
 
-        {/* Transaction Type */}
-        <div className="space-y-2">
-          <label htmlFor="type" className="flex gap-2 items-center text-violet-500 font-medium">
-            <FaWallet className="text-violet-500" />
-            <span>Type</span>
+        {/* Type */}
+        <div>
+          <label htmlFor="type" className="flex items-center gap-2 text-violet-500 font-medium">
+            <FaWallet /> Type
           </label>
-          <select {...register("type", validationRules.type)}
+          <select
+            {...register("type", validationRules.type)}
             id="type"
-            className="block w-full p-2 mt-1 border border-violet-300 rounded-md shadow-sm focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50">
+            className="w-full mt-1 p-2 border border-violet-300 rounded-md focus:ring-violet-500"
+          >
             <option value="">Select transaction type</option>
             {categories.map((cat) => (
               <option key={cat._id} value={cat._id}>{cat.name}</option>
@@ -151,59 +139,73 @@ export const TransactionForm = () => {
         </div>
 
         {/* Amount */}
-        <div className="flex flex-col space-y-1">
+        <div>
           <label htmlFor="amount" className="text-violet-500 font-medium">
-            <FaRupeeSign className="inline mr-2 text-violet-500" /> Amount
+            <FaRupeeSign className="inline mr-2" /> Amount
           </label>
-          <input type="number" {...register("amount", validationRules.amount)}
+          <input
+            type="number"
             id="amount"
+            {...register("amount", validationRules.amount)}
             placeholder="Amount"
-            className="w-full border border-violet-300 rounded-md shadow-sm py-2 px-3 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50" />
+            className="w-full p-2 border border-violet-300 rounded-md focus:ring-violet-500"
+          />
           <span className="text-red-500 text-xs">{errors.amount?.message}</span>
         </div>
 
         {/* Category */}
-        <div className="flex flex-col space-y-1">
+        <div>
           <label htmlFor="category" className="text-violet-500 font-medium">
-            <FaRegCommentDots className="inline mr-2 text-violet-500" /> Category
+            <FaRegCommentDots className="inline mr-2" /> Category
           </label>
-          <select {...register("category", validationRules.category)}
+          <select
             id="category"
-            className="w-full border border-violet-300 rounded-md shadow-sm py-2 px-3 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50">
-            <option value="">Select a category</option>
-            {subCategories.map((subCat) => (
-              <option key={subCat._id} value={subCat._id}>{subCat.name}</option>
+            {...register("category", validationRules.category)}
+            className="w-full p-2 border border-violet-300 rounded-md focus:ring-violet-500"
+          >
+            <option value="">Select category</option>
+            {subCategories.map((sub) => (
+              <option key={sub._id} value={sub._id}>{sub.name}</option>
             ))}
           </select>
           <span className="text-red-500 text-xs">{errors.category?.message}</span>
         </div>
 
-        {/* Date Field */}
-        <div className="flex flex-col space-y-1">
+        {/* Date */}
+        <div>
           <label htmlFor="date" className="text-violet-500 font-medium">
-            <FaCalendarAlt className="inline mr-2 text-violet-500" /> Date
+            <FaCalendarAlt className="inline mr-2" /> Date
           </label>
-          <input type="date" {...register("date", validationRules.date)}
+          <input
+            type="date"
             id="date"
-            className="w-full border border-violet-300 rounded-md shadow-sm py-2 px-3 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50" />
+            {...register("date", validationRules.date)}
+            className="w-full p-2 border border-violet-300 rounded-md focus:ring-violet-500"
+          />
           <span className="text-red-500 text-xs">{errors.date?.message}</span>
         </div>
 
-        {/* Description Field */}
-        <div className="flex flex-col space-y-1">
+        {/* Description */}
+        <div>
           <label htmlFor="description" className="text-violet-500 font-medium">
-            <FaRegCommentDots className="inline mr-2 text-violet-500" /> Description (Optional)
+            <FaRegCommentDots className="inline mr-2" /> Description (optional)
           </label>
-          <textarea {...register("description")}
+          <textarea
             id="description"
+            {...register("description")}
             placeholder="Description"
             rows="3"
-            className="w-full border border-violet-300 rounded-md shadow-sm py-2 px-3 
-                        focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50"></textarea>
+            className="w-full p-2 border border-violet-300 rounded-md focus:ring-violet-500"
+          ></textarea>
         </div>
 
-        {/* Submit Button */}
-        <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-800 hover:to-purple-800 text-violet-300 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200">
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-800 hover:to-purple-800 text-violet-100 font-bold py-2 px-4 rounded transition 
+            ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
           {transaction ? "Update Transaction" : "Submit Transaction"}
         </button>
       </form>

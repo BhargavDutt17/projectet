@@ -13,26 +13,26 @@ export const TransactionReport = () => {
     generatedDate: "",
   });
   const [isPending, startTransition] = useTransition();
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
   const [selectedReports, setSelectedReports] = useState([]);
 
-  // Fetch transaction reports from backend
   useEffect(() => {
-    setLoading(true); // Start loading when form submission begins
     const fetchReports = async () => {
+      setLoading(true);
       const user_id = localStorage.getItem("id");
-      if (!user_id) return;
+      if (!user_id) {
+        showToast("User ID not found", "error");
+        return;
+      }
 
       try {
         const response = await axios.get(`/getAllTransactionReports/${user_id}`);
         setReports(response.data.reports);
-        console.log("Fetching reports for user:", user_id);
       } catch (error) {
         console.error("Error fetching transaction reports:", error);
-        showToast("Error fetching transaction reports", "error")
-
+        showToast("Error fetching transaction reports", "error");
       } finally {
-        setLoading(false); // Stop loading when the request completes
+        setLoading(false);
       }
     };
 
@@ -103,92 +103,71 @@ export const TransactionReport = () => {
 
   const handleDeleteReport = useCallback(async (reportId) => {
     try {
-      await axios.delete(`/transaction-reports/${reportId}`); // No user_id, No role check
-
+      await axios.delete(`/transaction-reports/${reportId}`);
       startTransition(() => {
         setReports((prevReports) => prevReports.filter((r) => r._id !== reportId));
       });
-
-      showToast("Report deleted successfully", "success"); // Use global toast
+      showToast("Report deleted successfully", "success");
     } catch (error) {
       console.error("Error deleting report:", error);
-      showToast("Failed to delete report", "error"); // Use global toast
+      showToast("Failed to delete report", "error");
     }
   }, []);
 
   const handleDeleteAllReports = async () => {
-    setLoading(true); // Start loading when form submission begins
+    setLoading(true);
     const user_id = localStorage.getItem("id");
-    if (!user_id) return;
+    if (!user_id) {
+      showToast("User ID not found", "error");
+      return;
+    }
 
     try {
       await axios.delete(`/all-transaction-reports/${user_id}`);
-
       startTransition(() => {
         setReports([]);
       });
-
-      showToast("All reports deleted successfully", "success"); // Use global toast
+      showToast("All reports deleted successfully", "success");
     } catch (error) {
       console.error("Error deleting all reports:", error);
-      showToast("Failed to delete all reports", "error"); // Use global toast
-
+      showToast("Failed to delete all reports", "error");
     } finally {
-      setLoading(false); // Stop loading when the request completes
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen p-4 shadow-lg bg-white dark:bg-gray-950 text-violet-500 font-small">
       {loading && <CustomLoader />}
+
       <div className="mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="col-span-1">
-          <label className="block text-violet-500 text-center">Start Date</label>
-          <input
-            type="date"
-            name="startDate"
-            value={filters.startDate ? filters.startDate.split("/").reverse().join("-") : ""}
-            onChange={handleFilterChange}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-      bg-white dark:bg-slate-700 border border-violet-500"
-          />
-        </div>
-        <div className="col-span-1">
-          <label className="block text-violet-500 text-center">End Date</label>
-          <input
-            type="date"
-            name="endDate"
-            value={filters.endDate ? filters.endDate.split("/").reverse().join("-") : ""}
-            onChange={handleFilterChange}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-      bg-white dark:bg-slate-700 border border-violet-500"
-          />
-        </div>
-        <div className="col-span-1">
-          <label className="block text-violet-500 text-center">Generated Date</label>
-          <input
-            type="date"
-            name="generatedDate"
-            value={filters.generatedDate ? filters.generatedDate.split("/").reverse().join("-") : ""}
-            onChange={handleFilterChange}
-            className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
-      bg-white dark:bg-slate-700 border border-violet-500"
-          />
-        </div>
+        {/* Filter Inputs */}
+        {["startDate", "endDate", "generatedDate"].map((key) => (
+          <div key={key} className="col-span-1">
+            <label className="block text-violet-500 text-center">
+              {key === "startDate" ? "Start Date" : key === "endDate" ? "End Date" : "Generated Date"}
+            </label>
+            <input
+              type="date"
+              name={key}
+              value={filters[key] ? filters[key].split("/").reverse().join("-") : ""}
+              onChange={handleFilterChange}
+              className="w-full p-2 rounded-lg border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500 focus:ring-opacity-50 
+                bg-white dark:bg-slate-700 border border-violet-500"
+            />
+          </div>
+        ))}
       </div>
 
       <div className="my-4 p-4 shadow-lg rounded-lg bg-white dark:bg-gray-950">
         <div className="mt-6 bg-white dark:bg-gray-950 p-4 rounded-lg shadow-inner">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-violet-500">
-              Transaction Reports
-            </h3>
-            {/* Move the Delete All button to the far right of the header */}
+            <h3 className="text-xl font-semibold text-violet-500">Transaction Reports</h3>
             {selectedReports.length > 0 ? (
               <button
                 onClick={handleDeleteSelectedReports}
                 className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 
-                flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+                  flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
               >
                 <FaTrashAlt />
                 Delete Selected
@@ -197,13 +176,14 @@ export const TransactionReport = () => {
               <button
                 onClick={handleDeleteAllReports}
                 className="bg-gradient-to-r from-red-500 to-rose-700 hover:from-red-800 hover:to-rose-900 text-red-200 
-                flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
+                  flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 px-3 py-1 rounded-lg shadow"
               >
                 <FaTrashAlt />
                 Delete All
               </button>
             )}
           </div>
+
           <ul className="list-disc pl-5 space-y-2">
             {filteredReports.map((report) => (
               <li
@@ -211,9 +191,7 @@ export const TransactionReport = () => {
                 className="bg-white dark:bg-slate-700 p-3 rounded-md shadow border border-violet-500 flex justify-between items-center"
               >
                 <div>
-                  <span className="font-medium text-gray-950 dark:text-white">
-                    {report.report_name}
-                  </span>
+                  <span className="font-medium text-gray-950 dark:text-white">{report.report_name}</span>
                   <span className="ml-2 text-gray-950 dark:text-white">
                     ({report.start_date} - {report.end_date})
                   </span>
@@ -221,7 +199,7 @@ export const TransactionReport = () => {
                     Generated At: {report.generated_at}
                   </span>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 items-center">
                   {report.report_file_url ? (
                     <a
                       href={report.report_file_url}
@@ -234,28 +212,23 @@ export const TransactionReport = () => {
                   ) : (
                     <span className="text-gray-400">No File</span>
                   )}
-
                   <button
                     onClick={() => handleDeleteReport(report._id)}
                     className="text-red-500 hover:text-red-700"
                   >
                     <FaTrash />
                   </button>
-
                   <input
                     type="checkbox"
                     checked={selectedReports.includes(report._id)}
                     onChange={() => toggleReportSelection(report._id)}
-                    className="mr-3 accent-violet-600 w-4 h-4"
+                    className="accent-violet-600 w-4 h-4"
                   />
-
                 </div>
               </li>
             ))}
             {filteredReports.length === 0 && (
-              <p className="text-center text-gray-500 dark:text-white">
-                No reports found
-              </p>
+              <p className="text-center text-gray-500 dark:text-white">No reports found</p>
             )}
           </ul>
         </div>

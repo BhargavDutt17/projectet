@@ -328,7 +328,7 @@ export const UserList = () => {
                         </div>
                         <div className="flex space-x-4 text-xl items-center">
                             <RiFileList2Fill
-                                className="cursor-pointer text-blue-500 hover:text-blue-700"
+                                className="cursor-pointer text-violet-500 hover:text-blue-700"
                                 onClick={() => handleTransactionRedirect(user._id)}
                             />
 
